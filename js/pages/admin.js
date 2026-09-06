@@ -7,7 +7,7 @@ const state = { tab: "match" }; // match | players
 export function render(main) {
   let subCleanup = null;
 
-  function draw(user) {
+  async function draw(user) {
     if (subCleanup) {
       subCleanup();
       subCleanup = null;
@@ -27,7 +27,10 @@ export function render(main) {
       });
     });
     const body = document.getElementById("admin-tab-body");
-    subCleanup = state.tab === "match" ? AdminMatchForm.render(body) : AdminPlayers.render(body);
+    // AdminMatchForm.render is async (it awaits the player list) while
+    // AdminPlayers.render is sync; await works for both since awaiting a
+    // non-promise just resolves immediately with that value.
+    subCleanup = await (state.tab === "match" ? AdminMatchForm.render(body) : AdminPlayers.render(body));
   }
 
   const unsubAuth = onAuthChange(draw);
