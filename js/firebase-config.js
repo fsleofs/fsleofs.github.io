@@ -2,12 +2,12 @@
 // These values are meant to be public in a client app; access control is enforced by
 // firestore.rules and storage.rules, not by hiding this file.
 export const firebaseConfig = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  projectId: "REPLACE_ME",
-  storageBucket: "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId: "REPLACE_ME",
+  apiKey: "AIzaSyDJ88aCCsyBVhfzP0vwdmIuW7Oy5-K1gA4",
+  authDomain: "fs-leo-9a49d.firebaseapp.com",
+  projectId: "fs-leo-9a49d",
+  storageBucket: "fs-leo-9a49d.firebasestorage.app",
+  messagingSenderId: "38638640395",
+  appId: "1:38638640395:web:8fce047ff944d741eed60e",
 };
 
 // The single admin account is a normal Firebase Auth email/password user.
