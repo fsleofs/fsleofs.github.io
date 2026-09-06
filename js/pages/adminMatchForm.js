@@ -306,8 +306,32 @@ function renderQuarterSections(q, d, lineupPlayers) {
     </section>
 
     <section class="panel panel-pad" style="margin-bottom:16px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
+        <div class="section-label" style="margin:0">04 · ${q}쿼터 시작 멤버 선택</div>
+        <div class="mono" style="font-size:11.5px;color:var(--acc)">${d.startingLineup.length}명 선택됨</div>
+      </div>
+      ${
+        lineupPlayers.length
+          ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px">
+              ${lineupPlayers
+                .map((p) => {
+                  const on = d.startingLineup.includes(p.id);
+                  return `
+                  <button class="checkbox-item" data-starter="${p.id}" style="display:block;text-align:left;${on ? "border-color:var(--acc);background:color-mix(in oklab, var(--acc) 18%, var(--panel-2))" : ""}">
+                    <div style="font-size:13px;font-weight:600">${escapeHtml(p.name)}</div>
+                    <div class="mono" style="font-size:9px;color:var(--ink-3);margin-top:2px">#${escapeHtml(p.number ?? "-")} · ${escapeHtml(p.position || "")}</div>
+                  </button>
+                `;
+                })
+                .join("")}
+            </div>`
+          : `<div class="small-note">먼저 02에서 출전 선수를 선택하세요.</div>`
+      }
+    </section>
+
+    <section class="panel panel-pad" style="margin-bottom:16px">
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
-        <div class="section-label" style="margin:0">04-A · ${q}쿼터 이벤트 표</div>
+        <div class="section-label" style="margin:0">05-A · ${q}쿼터 이벤트 표</div>
         <button class="btn btn-sm" id="add-event">+ 행 추가</button>
       </div>
       <div style="overflow-x:auto"><div style="min-width:640px">
@@ -328,23 +352,8 @@ function renderQuarterSections(q, d, lineupPlayers) {
 
     <section class="panel panel-pad" style="margin-bottom:16px">
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
-        <div class="section-label" style="margin:0">04-B · ${q}쿼터 교체내역 표</div>
+        <div class="section-label" style="margin:0">05-B · ${q}쿼터 교체내역 표</div>
         <button class="btn btn-sm" id="add-sub">+ 행 추가</button>
-      </div>
-      <div style="border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:14px;background:var(--panel-2)">
-        <div class="small-note" style="margin:0 0 10px">시작 멤버 (해당 쿼터 0분 투입)</div>
-        <div style="display:flex;gap:7px;flex-wrap:wrap">
-          ${
-            lineupPlayers.length
-              ? lineupPlayers
-                  .map((p) => {
-                    const on = d.startingLineup.includes(p.id);
-                    return `<button class="btn btn-sm" data-starter="${p.id}" style="border-radius:999px;${on ? "background:var(--acc);border-color:var(--acc);color:var(--acc-ink)" : ""}">${escapeHtml(p.name)}</button>`;
-                  })
-                  .join("")
-              : `<span class="small-note">먼저 02에서 출전 선수를 선택하세요.</span>`
-          }
-        </div>
       </div>
       <div style="overflow-x:auto"><div style="min-width:520px">
         ${
