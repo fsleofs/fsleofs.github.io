@@ -255,4 +255,6 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
   .main{padding:24px 18px 60px;max-width:100%}
   .stat-grid{grid-template-columns:1fr}
   .list-row{grid-template-columns:80px 1fr 70px 1fr;padding:10px}
+  .event-entry-row,.sub-entry-row{grid-template-columns:1fr;gap:8px;padding:12px 0}
+  .event-entry-row [data-ev-del],.sub-entry-row [data-sub-del]{justify-self:end;width:64px}
 }
