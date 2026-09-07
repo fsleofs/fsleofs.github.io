@@ -34,4 +34,4 @@ export function playerAvatarSvg(size = 64) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" fill="none" stroke="var(--ink-3)" stroke-width="2.2" stroke-linecap="round"><circle cx="20" cy="14.6" r="6.4"></circle><path d="M7.4 34.2c0-6.5 5.6-10.8 12.6-10.8s12.6 4.3 12.6 10.8"></path></svg>`;
 }
 
-export const POSITIONS = ["Goleiro", "Fixo", "Ala", "Pivô", "미정"];
+export const POSITIONS = ["Goleiro", "Fixo", "Ala", "Pivô", "미정", "임시 선수"];
