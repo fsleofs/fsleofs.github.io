@@ -114,14 +114,30 @@ function renderMatch(main, match, players, quarters) {
   });
 
   const body = document.getElementById("match-tab-body");
-  if (state.tab === "lineup") renderLineup(body, match, players);
+  if (state.tab === "lineup") renderLineup(body, match, players, quarters);
   else if (state.tab === "records") renderRecords(body, match, players, quarters, score, timeline);
   else if (state.tab === "quarterProgress") renderQuarterProgress(body, players, quarters, quarterCount);
   else if (state.tab === "quarterRecords") renderQuarterRecords(body, players, quarters, quarterCount);
 }
 
-function renderLineup(body, match, players) {
-  const ids = match.lineupPlayerIds || [];
+// The admin's "02 출전 선수 선택" step saves lineupPlayerIds onto the match doc, but that only
+// persists if "경기 정보 저장" is clicked again after checking it — easy to miss when the admin's
+// next action is "쿼터 저장" instead. So fall back to whoever actually shows up in the saved
+// quarters (starting lineups + substitutions) if lineupPlayerIds is empty or missing someone.
+function deriveLineupIds(match, quarters) {
+  const ids = new Set(match.lineupPlayerIds || []);
+  for (const q of quarters || []) {
+    for (const pid of q.startingLineup || []) ids.add(pid);
+    for (const s of q.substitutions || []) {
+      if (s.playerInId) ids.add(s.playerInId);
+      if (s.playerOutId) ids.add(s.playerOutId);
+    }
+  }
+  return [...ids];
+}
+
+function renderLineup(body, match, players, quarters) {
+  const ids = deriveLineupIds(match, quarters);
   if (!ids.length) {
     body.innerHTML = `<div class="empty-box">등록된 출전 명단이 없습니다.</div>`;
     return;
