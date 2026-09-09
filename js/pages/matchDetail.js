@@ -321,7 +321,7 @@ function renderQuarterProgress(body, players, quarters, quarterCount) {
 
 function renderQuarterRecords(body, players, quarters, quarterCount) {
   const q = quarters.find((qq) => qq.quarterNumber === state.quarter);
-  const rows = q ? computePlayerRows(players, [q]) : [];
+  const rows = q ? computePlayerRows(players, quarters, state.quarter) : [];
   body.innerHTML = `
     ${quarterButtons(quarterCount)}
     ${playerRowsTable(rows)}

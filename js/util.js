@@ -24,14 +24,16 @@ export function formatShortDate(dateStr) {
   return `${String(m).padStart(2, "0")}.${String(d).padStart(2, "0")}`;
 }
 
-// "7:32" or "452" -> 452 (seconds). Returns null if unparseable.
+// "7:32" -> 452 (seconds). A bare number with no colon is treated as whole minutes
+// (e.g. "15" -> 15:00 -> 900), matching how mm:ss is written everywhere else in this form —
+// it is NOT raw seconds. Returns null if unparseable.
 export function parseTimeInput(str) {
   const s = String(str ?? "").trim();
   if (!s) return null;
   const parts = s.split(":").map((p) => p.trim());
   if (parts.length === 1) {
     const n = Number(parts[0]);
-    return Number.isFinite(n) ? Math.round(n) : null;
+    return Number.isFinite(n) ? Math.round(n * 60) : null;
   }
   if (parts.length === 2) {
     const m = Number(parts[0]);

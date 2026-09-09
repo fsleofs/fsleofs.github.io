@@ -8,7 +8,7 @@ import {
   setQuarter,
   getPlayersOnce,
 } from "../data.js";
-import { computeQuarterPlaytime, formatSeconds, EVENT_TYPES } from "../calc.js";
+import { computeQuartersWithOffsets, formatSeconds, EVENT_TYPES } from "../calc.js";
 import { escapeHtml, parseTimeInput, formatDate } from "../util.js";
 
 const EVENT_KIND_OPTIONS = [
@@ -48,6 +48,17 @@ function emptyDraft() {
 function draft(qNum) {
   if (!form.quarterDrafts[qNum]) form.quarterDrafts[qNum] = emptyDraft();
   return form.quarterDrafts[qNum];
+}
+
+// All quarter drafts (1..quarterCount) as a plain array with quarterNumber attached, for feeding
+// into computeQuartersWithOffsets — a quarter's start time is derived from the previous quarter's
+// "쿼터 종료" time, so the calculation needs every quarter's draft, not just the one being edited.
+function draftsArray() {
+  const arr = [];
+  for (let n = 1; n <= form.quarterCount; n++) {
+    arr.push({ quarterNumber: n, ...draft(n) });
+  }
+  return arr;
 }
 
 function playerName(id) {
@@ -290,7 +301,9 @@ function renderAll() {
 }
 
 function renderQuarterSections(q, d, lineupPlayers) {
-  const playtime = computeQuarterPlaytime(d);
+  const offsetEntry = computeQuartersWithOffsets(draftsArray()).find((w) => w.quarter.quarterNumber === q);
+  const playtime = offsetEntry ? offsetEntry.playtime : null;
+  const quarterStartTime = offsetEntry ? offsetEntry.startTime : 0;
 
   return `
     <section class="panel panel-pad" style="margin-bottom:16px">
@@ -369,7 +382,7 @@ function renderQuarterSections(q, d, lineupPlayers) {
 
     <section class="panel panel-pad">
       <div class="section-label">자동 계산 · 출전 시간 (${q}쿼터)</div>
-      <p class="small-note" style="margin:0 0 14px">시작 멤버와 교체 시간을 근거로 계산됩니다.</p>
+      <p class="small-note" style="margin:0 0 14px">이 쿼터 시작 시각(자동 감지, 이전 쿼터 종료 시각 기준): <span class="mono" style="color:var(--acc)">${formatSeconds(quarterStartTime)}</span> — 시간 입력란은 쿼터마다 0:00부터가 아니라, 경기 전체를 관통하는 시계 기준으로 계속 이어서 적어주세요.</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px">
         ${
           playtime && playtime.size

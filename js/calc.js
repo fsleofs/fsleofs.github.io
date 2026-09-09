@@ -19,14 +19,17 @@ export function getQuarterEndTime(quarter) {
 
 // Computes seconds-on-pitch per player for a single quarter.
 // quarter: { startingLineup: [playerId], substitutions: [{time, playerInId, playerOutId}], events: [...] }
+// quarterStartTime: the clock time this quarter's starting lineup takes the pitch at. Events/substitutions
+// are recorded on a continuous match clock (not reset to 0 each quarter), so quarter 2+ starts wherever
+// the previous quarter's "쿼터 종료" event left off, not at 0 — see computeQuartersWithOffsets.
 // Returns a Map<playerId, seconds>, or null if the quarter has no "쿼터 종료" event yet.
-export function computeQuarterPlaytime(quarter) {
+export function computeQuarterPlaytime(quarter, quarterStartTime = 0) {
   const endTime = getQuarterEndTime(quarter);
   if (endTime == null) return null;
 
   const onPitchSince = new Map();
   for (const pid of quarter.startingLineup || []) {
-    onPitchSince.set(pid, 0);
+    onPitchSince.set(pid, quarterStartTime);
   }
 
   const totals = new Map();
@@ -51,18 +54,33 @@ export function computeQuarterPlaytime(quarter) {
   return totals;
 }
 
+// Walks quarters in order, feeding each quarter's "쿼터 종료" time forward as the next quarter's
+// start time (falling back to the last known boundary — or 0 for quarter 1 — when a quarter isn't
+// finished yet). Returns [{ quarter, startTime, playtime }], playtime null if that quarter has no
+// "쿼터 종료" event.
+export function computeQuartersWithOffsets(quarters) {
+  const sorted = [...(quarters || [])].sort((a, b) => a.quarterNumber - b.quarterNumber);
+  let cursor = 0;
+  return sorted.map((quarter) => {
+    const startTime = cursor;
+    const playtime = computeQuarterPlaytime(quarter, startTime);
+    const endTime = getQuarterEndTime(quarter);
+    if (endTime != null) cursor = endTime;
+    return { quarter, startTime, playtime };
+  });
+}
+
 // Sums playtime across every quarter of a match. Returns { totals: Map<playerId, seconds>, incomplete: boolean }
 // incomplete=true means at least one quarter is missing its "쿼터 종료" event.
 export function computeMatchPlaytime(quarters) {
   const totals = new Map();
   let incomplete = false;
-  for (const q of quarters || []) {
-    const qTotals = computeQuarterPlaytime(q);
-    if (qTotals == null) {
+  for (const { playtime } of computeQuartersWithOffsets(quarters)) {
+    if (playtime == null) {
       incomplete = true;
       continue;
     }
-    for (const [pid, secs] of qTotals.entries()) {
+    for (const [pid, secs] of playtime.entries()) {
       totals.set(pid, (totals.get(pid) || 0) + secs);
     }
   }
@@ -98,13 +116,25 @@ export function computeGoalTimeline(quarters) {
   return rows;
 }
 
-// Per-player rows (minutes/goals/assists) restricted to a single quarter or the whole match.
-// players: full player list (for name/position lookup). quarters: array of quarter docs to include.
-export function computePlayerRows(players, quarters) {
-  const { totals: playtime } = computeMatchPlaytime(quarters);
+// Per-player rows (minutes/goals/assists) for the whole match, or for a single quarter within it.
+// players: full player list (for name/position lookup). quarters: ALL quarter docs of the match —
+// even when isolating one quarter's stats, the full list is needed to correctly derive that
+// quarter's start time from the ones before it (see computeQuartersWithOffsets).
+// onlyQuarterNumber: when set, goals/assists/playtime are restricted to that one quarter.
+export function computePlayerRows(players, quarters, onlyQuarterNumber = null) {
+  const withOffsets = computeQuartersWithOffsets(quarters).filter(
+    (w) => onlyQuarterNumber == null || w.quarter.quarterNumber === onlyQuarterNumber
+  );
+
+  const playtime = new Map();
+  for (const { playtime: pt } of withOffsets) {
+    if (!pt) continue;
+    for (const [pid, secs] of pt.entries()) playtime.set(pid, (playtime.get(pid) || 0) + secs);
+  }
+
   const goals = new Map();
   const assists = new Map();
-  for (const q of quarters || []) {
+  for (const { quarter: q } of withOffsets) {
     for (const e of q.events || []) {
       if (e.type === EVENT_TYPES.GOAL_FOR) {
         if (e.playerId) goals.set(e.playerId, (goals.get(e.playerId) || 0) + 1);
