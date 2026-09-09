@@ -10,6 +10,14 @@ const state = {
   quarter: 1,
 };
 
+const EVENT_KIND_INFO = {
+  [EVENT_TYPES.GOAL_FOR]: { label: "득점", color: "var(--win)" },
+  [EVENT_TYPES.GOAL_AGAINST]: { label: "실점", color: "var(--lose)" },
+  [EVENT_TYPES.SHOT_FOR]: { label: "슛", color: "var(--acc)" },
+  [EVENT_TYPES.SHOT_AGAINST]: { label: "허용한 슈팅", color: "var(--ink-3)" },
+};
+const PROGRESS_EVENT_TYPES = new Set(Object.keys(EVENT_KIND_INFO));
+
 function playerName(players, id) {
   const p = players.find((pl) => pl.id === id);
   return p ? p.name : "(삭제된 선수)";
@@ -233,7 +241,7 @@ function playerRowsTable(rows) {
   return `
     <div class="rows-table">
       <div class="rt-head">
-        <span>선수</span><span>포지션</span><span class="num">출전시간</span><span class="num">득점</span><span class="num">어시스트</span>
+        <span>선수</span><span>포지션</span><span class="num">출전시간</span><span class="num">슛</span><span class="num">득점</span><span class="num">어시스트</span>
       </div>
       ${rows
         .map(
@@ -242,6 +250,7 @@ function playerRowsTable(rows) {
           <span class="n">${escapeHtml(r.name)}</span>
           <span class="p">${escapeHtml(r.position || "")}</span>
           <span class="num">${formatSeconds(r.seconds)}</span>
+          <span class="num" style="color:${r.shots ? "var(--acc)" : "inherit"}">${r.shots}</span>
           <span class="num" style="color:${r.goals ? "var(--acc)" : "inherit"}">${r.goals}</span>
           <span class="num" style="color:${r.assists ? "var(--acc)" : "inherit"}">${r.assists}</span>
         </div>
@@ -276,23 +285,31 @@ function renderQuarterProgress(body, players, quarters, quarterCount) {
     ${quarterButtons(quarterCount)}
     <div class="two-col">
       <div class="panel panel-pad">
-        <div class="section-label">득점 / 실점</div>
+        <div class="section-label">득점 / 실점 / 슛</div>
         ${
-          q && (q.events || []).some((e) => e.type === EVENT_TYPES.GOAL_FOR || e.type === EVENT_TYPES.GOAL_AGAINST)
+          q && (q.events || []).some((e) => PROGRESS_EVENT_TYPES.has(e.type))
             ? q.events
-                .filter((e) => e.type === EVENT_TYPES.GOAL_FOR || e.type === EVENT_TYPES.GOAL_AGAINST)
+                .filter((e) => PROGRESS_EVENT_TYPES.has(e.type))
                 .sort((a, b) => a.time - b.time)
-                .map(
-                  (e) => `
+                .map((e) => {
+                  const info = EVENT_KIND_INFO[e.type];
+                  const who =
+                    e.type === EVENT_TYPES.GOAL_FOR || e.type === EVENT_TYPES.SHOT_FOR
+                      ? escapeHtml(playerName(players, e.playerId)) +
+                        (e.type === EVENT_TYPES.GOAL_FOR && e.assistPlayerId
+                          ? ` (도움: ${escapeHtml(playerName(players, e.assistPlayerId))})`
+                          : "")
+                      : "-";
+                  return `
               <div class="qevent-row">
                 <span class="t mono" style="color:var(--ink-3)">${formatSeconds(e.time)}</span>
-                <span class="kind" style="color:${e.type === EVENT_TYPES.GOAL_FOR ? "var(--win)" : "var(--lose)"}">${e.type === EVENT_TYPES.GOAL_FOR ? "득점" : "실점"}</span>
-                <span>${e.type === EVENT_TYPES.GOAL_FOR ? escapeHtml(playerName(players, e.playerId)) + (e.assistPlayerId ? ` (도움: ${escapeHtml(playerName(players, e.assistPlayerId))})` : "") : "-"}</span>
+                <span class="kind" style="color:${info.color}">${info.label}</span>
+                <span>${who}</span>
               </div>
-            `
-                )
+            `;
+                })
                 .join("")
-            : `<div style="padding:18px 0;color:var(--ink-3);font-size:13px">기록된 득점·실점이 없습니다.</div>`
+            : `<div style="padding:18px 0;color:var(--ink-3);font-size:13px">기록된 득점·실점·슛이 없습니다.</div>`
         }
       </div>
       <div class="panel panel-pad">

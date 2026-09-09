@@ -134,16 +134,19 @@ export function computePlayerRows(players, quarters, onlyQuarterNumber = null) {
 
   const goals = new Map();
   const assists = new Map();
+  const shots = new Map();
   for (const { quarter: q } of withOffsets) {
     for (const e of q.events || []) {
       if (e.type === EVENT_TYPES.GOAL_FOR) {
         if (e.playerId) goals.set(e.playerId, (goals.get(e.playerId) || 0) + 1);
         if (e.assistPlayerId) assists.set(e.assistPlayerId, (assists.get(e.assistPlayerId) || 0) + 1);
+      } else if (e.type === EVENT_TYPES.SHOT_FOR) {
+        if (e.playerId) shots.set(e.playerId, (shots.get(e.playerId) || 0) + 1);
       }
     }
   }
 
-  const playerIds = new Set([...playtime.keys(), ...goals.keys(), ...assists.keys()]);
+  const playerIds = new Set([...playtime.keys(), ...goals.keys(), ...assists.keys(), ...shots.keys()]);
   const byId = new Map(players.map((p) => [p.id, p]));
   const rows = [...playerIds].map((pid) => {
     const p = byId.get(pid);
@@ -154,6 +157,7 @@ export function computePlayerRows(players, quarters, onlyQuarterNumber = null) {
       seconds: playtime.get(pid) || 0,
       goals: goals.get(pid) || 0,
       assists: assists.get(pid) || 0,
+      shots: shots.get(pid) || 0,
     };
   });
   rows.sort((a, b) => b.seconds - a.seconds);
@@ -201,7 +205,7 @@ export function computeStandings(matchesWithQuarters) {
 // Season-wide per-player leaderboard across every match.
 export function computeLeaderboard(players, matchesWithQuarters) {
   const stats = new Map(
-    players.map((p) => [p.id, { playerId: p.id, name: p.name, position: p.position, seconds: 0, goals: 0, assists: 0, appearances: 0 }])
+    players.map((p) => [p.id, { playerId: p.id, name: p.name, position: p.position, seconds: 0, goals: 0, assists: 0, shots: 0, appearances: 0 }])
   );
 
   for (const m of matchesWithQuarters) {
@@ -212,6 +216,7 @@ export function computeLeaderboard(players, matchesWithQuarters) {
       s.seconds += r.seconds;
       s.goals += r.goals;
       s.assists += r.assists;
+      s.shots += r.shots;
       if (r.seconds > 0) s.appearances += 1;
     }
   }

@@ -7,6 +7,7 @@ const COLUMNS = [
   { key: "position", label: "포지션", just: "flex-start" },
   { key: "appearances", label: "출전", just: "flex-end" },
   { key: "seconds", label: "출전시간", just: "flex-end" },
+  { key: "shots", label: "슛", just: "flex-end" },
   { key: "goals", label: "득점", just: "flex-end" },
   { key: "assists", label: "어시스트", just: "flex-end" },
 ];
@@ -84,6 +85,7 @@ export function render(main) {
           <span class="p">${escapeHtml(r.position || "")}</span>
           <span class="num">${r.appearances}</span>
           <span class="num">${formatSeconds(r.seconds)}</span>
+          <span class="num">${r.shots}</span>
           <span class="num strong">${r.goals}</span>
           <span class="num strong">${r.assists}</span>
         </div>
