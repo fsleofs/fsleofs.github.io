@@ -14,7 +14,7 @@ const EVENT_KIND_INFO = {
   [EVENT_TYPES.GOAL_FOR]: { label: "득점", color: "var(--win)" },
   [EVENT_TYPES.GOAL_AGAINST]: { label: "실점", color: "var(--lose)" },
   [EVENT_TYPES.SHOT_FOR]: { label: "슛", color: "var(--acc)" },
-  [EVENT_TYPES.SHOT_AGAINST]: { label: "허용한 슈팅", color: "var(--ink-3)" },
+  [EVENT_TYPES.SHOT_AGAINST]: { label: "허용한 슈팅", color: "var(--ink-2)" },
 };
 const PROGRESS_EVENT_TYPES = new Set(Object.keys(EVENT_KIND_INFO));
 
