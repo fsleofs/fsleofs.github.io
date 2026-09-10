@@ -241,7 +241,7 @@ function playerRowsTable(rows) {
   return `
     <div class="rows-table">
       <div class="rt-head">
-        <span>선수</span><span>포지션</span><span class="num">출전시간</span><span class="num">슛</span><span class="num">득점</span><span class="num">어시스트</span>
+        <span>선수</span><span>포지션</span><span class="num">출전시간</span><span class="num">득점</span><span class="num">어시스트</span><span class="num">슛</span>
       </div>
       ${rows
         .map(
@@ -250,9 +250,9 @@ function playerRowsTable(rows) {
           <span class="n">${escapeHtml(r.name)}</span>
           <span class="p">${escapeHtml(r.position || "")}</span>
           <span class="num">${formatSeconds(r.seconds)}</span>
-          <span class="num" style="color:${r.shots ? "var(--acc)" : "inherit"}">${r.shots}</span>
           <span class="num" style="color:${r.goals ? "var(--acc)" : "inherit"}">${r.goals}</span>
           <span class="num" style="color:${r.assists ? "var(--acc)" : "inherit"}">${r.assists}</span>
+          <span class="num" style="color:${r.shots ? "var(--acc)" : "inherit"}">${r.shots}</span>
         </div>
       `
         )
