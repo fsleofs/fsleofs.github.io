@@ -35,3 +35,6 @@ export function playerAvatarSvg(size = 64) {
 }
 
 export const POSITIONS = ["Goleiro", "Fixo", "Ala", "Pivô", "미정", "임시"];
+
+// Fallback link for the per-match YouTube badge when a match has no video of its own yet.
+export const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@leo_fs-q5b";

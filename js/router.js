@@ -1,4 +1,5 @@
 import { onAuthChange } from "./firebase.js";
+import { YOUTUBE_CHANNEL_URL } from "./pages/shared.js";
 import * as Dashboard from "./pages/dashboard.js";
 import * as Squad from "./pages/squad.js";
 import * as Fixtures from "./pages/fixtures.js";
@@ -59,7 +60,7 @@ const NAV_ITEMS = [
 
 const SOCIAL_LINKS = {
   instagram: "https://instagram.com/",
-  youtube: "https://www.youtube.com/@leo_fs-q5b",
+  youtube: YOUTUBE_CHANNEL_URL,
 };
 
 function applyTheme(theme) {

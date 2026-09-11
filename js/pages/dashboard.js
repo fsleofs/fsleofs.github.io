@@ -1,4 +1,4 @@
-import { subscribeSeasonData } from "./shared.js";
+import { subscribeSeasonData, YOUTUBE_CHANNEL_URL } from "./shared.js";
 import { computeLeaderboard, findTop, computeMatchScore, formatSeconds } from "../calc.js";
 import { navigate } from "../router.js";
 import { escapeHtml, formatShortDate } from "../util.js";
@@ -74,21 +74,17 @@ function renderMatches(matches) {
       const scoreText = score ? `${score.gf} - ${score.ga}` : "예정";
       const homeColor = !score ? "var(--ink-2)" : score.result === "L" ? "var(--ink-2)" : "var(--ink)";
       const awayColor = !score ? "var(--ink-2)" : score.result === "W" ? "var(--ink-2)" : "var(--ink)";
-      const hasYoutube = !!m.youtubeUrl;
+      const youtubeHref = m.youtubeUrl || YOUTUBE_CHANNEL_URL;
       return `
-        <div class="list-row fixtures-row${hasYoutube ? " has-yt" : ""}" data-match="${m.id}" role="button" tabindex="0">
+        <div class="list-row fixtures-row has-yt" data-match="${m.id}" role="button" tabindex="0">
           <span class="datecol">${formatShortDate(m.date)}</span>
           <span class="side-r" style="color:${homeColor}">FS Leo</span>
           <span class="score">${scoreText}</span>
           <span class="side-l" style="color:${awayColor}">${escapeHtml(m.opponentName || "상대팀")}</span>
-          ${
-            hasYoutube
-              ? `<a class="yt-btn" href="${escapeHtml(m.youtubeUrl)}" target="_blank" rel="noopener" title="유튜브 영상 보기" onclick="event.stopPropagation()">
-                  <svg width="22" height="22" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8Z" fill="#FF0000"/><path d="M9.6 15.6 15.8 12 9.6 8.4Z" fill="#fff"/></svg>
-                  <span class="yt-label">YouTube</span>
-                </a>`
-              : ""
-          }
+          <a class="yt-btn" href="${escapeHtml(youtubeHref)}" target="_blank" rel="noopener" title="유튜브 영상 보기" onclick="event.stopPropagation()">
+            <svg width="22" height="22" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8Z" fill="#FF0000"/><path d="M9.6 15.6 15.8 12 9.6 8.4Z" fill="#fff"/></svg>
+            <span class="yt-label">YouTube</span>
+          </a>
         </div>
       `;
     })
