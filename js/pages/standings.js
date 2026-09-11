@@ -11,7 +11,7 @@ export function render(main) {
   main.innerHTML = `
     <h1 class="page-title">총 승점 현황</h1>
     <p class="page-sub">누적 시즌 기록</p>
-    <div class="panel">
+    <div class="panel table-scroll">
       <div class="standings-head">
         <span>팀명</span><span style="text-align:center">경기</span><span style="text-align:center">승</span>
         <span style="text-align:center">무</span><span style="text-align:center">패</span>

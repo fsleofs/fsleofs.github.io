@@ -88,6 +88,10 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
 .list-row .side-l{text-align:left;font-size:14px}
 .list-row .score{text-align:center;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
 .list-row .datecol{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-3)}
+.list-row.fixtures-row{grid-template-columns:80px 1fr 92px 1fr}
+.list-row.fixtures-row.has-yt{grid-template-columns:80px 1fr 92px 1fr 32px}
+.yt-btn{width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);color:var(--acc);display:flex;align-items:center;justify-content:center;justify-self:center}
+.yt-btn:hover{border-color:var(--acc);color:var(--ink)}
 .empty-box{border:1px dashed var(--line);border-radius:14px;padding:48px;text-align:center;color:var(--ink-3);font-size:13.5px}
 
 /* squad */
@@ -250,11 +254,27 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
 .loading{padding:40px;text-align:center;color:var(--ink-3);font-size:13px}
 
 @media (max-width: 860px){
-  .app-shell{flex-direction:column}
+  .app-shell{flex-direction:column;align-items:stretch}
   .sidebar{position:relative;width:100%;flex:none;height:auto}
-  .main{padding:24px 18px 60px;max-width:100%}
+  .main{padding:24px 18px 60px;max-width:100%;width:100%}
   .stat-grid{grid-template-columns:1fr}
   .list-row{grid-template-columns:80px 1fr 70px 1fr;padding:10px}
+  .list-row.fixtures-row{grid-template-columns:64px 1fr 66px 1fr;gap:10px}
+  .list-row.fixtures-row.has-yt{grid-template-columns:56px 1fr 60px 1fr 28px;gap:8px}
+  .yt-btn{width:24px;height:24px}
   .event-entry-row,.sub-entry-row{grid-template-columns:1fr;gap:8px;padding:12px 0}
   .event-entry-row [data-ev-del],.sub-entry-row [data-sub-del]{justify-self:end;width:64px}
+
+  .squad-grid{grid-template-columns:repeat(2,1fr)}
+
+  .goal-line{display:flex;flex-direction:column;gap:1px}
+  .goal-line .goal-sep{display:none}
+  .goal-line .goal-time{font-size:11px;color:var(--ink-3)}
+  .goal-line .goal-scorer{font-weight:600}
+  .goal-line .goal-assist{font-size:11.5px;color:var(--ink-3)}
+
+  .table-scroll{overflow-x:auto}
+  .rt-head,.rt-row{grid-template-columns:minmax(74px,1fr) minmax(56px,0.8fr) minmax(52px,0.7fr) minmax(32px,0.5fr) minmax(32px,0.5fr) minmax(32px,0.5fr);gap:8px;min-width:320px}
+  .pt-head,.pt-row{grid-template-columns:minmax(70px,1fr) minmax(52px,0.75fr) minmax(28px,0.4fr) minmax(50px,0.7fr) minmax(28px,0.4fr) minmax(28px,0.4fr) minmax(28px,0.4fr);gap:8px;min-width:340px}
+  .standings-head,.standings-row{grid-template-columns:minmax(64px,1fr) 26px 24px 24px 24px 38px 48px 34px 84px;gap:6px;min-width:410px}
 }

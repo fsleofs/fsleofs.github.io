@@ -34,6 +34,7 @@ function emptyForm() {
     time: "",
     venue: "",
     opponentName: "",
+    youtubeUrl: "",
     quarterCount: 5,
     lineupPlayerIds: [],
     activeQuarter: 1,
@@ -116,6 +117,7 @@ async function loadMatch(matchId) {
     form.time = match.time || "";
     form.venue = match.venue || "";
     form.opponentName = match.opponentName || "";
+    form.youtubeUrl = match.youtubeUrl || "";
     form.quarterCount = match.quarterCount || 5;
     form.lineupPlayerIds = match.lineupPlayerIds || [];
     for (const q of quarters) {
@@ -142,6 +144,7 @@ async function saveMatchInfo() {
     time: form.time,
     venue: form.venue,
     opponentName: form.opponentName,
+    youtubeUrl: form.youtubeUrl.trim(),
     quarterCount: Number(form.quarterCount) || 1,
     lineupPlayerIds: form.lineupPlayerIds,
   };
@@ -243,6 +246,7 @@ function renderAll() {
         <label class="field"><span class="lab">경기장</span><input type="text" id="f-venue" placeholder="예: 잠실 풋살파크 A코트" value="${escapeHtml(form.venue)}" /></label>
         <label class="field"><span class="lab">상대팀</span><input type="text" id="f-opp" placeholder="상대팀명" value="${escapeHtml(form.opponentName)}" /></label>
         <label class="field"><span class="lab">쿼터 수</span><input type="number" id="f-qcount" min="1" max="10" value="${form.quarterCount}" /></label>
+        <label class="field"><span class="lab">유튜브 링크 (선택)</span><input type="text" id="f-youtube" placeholder="https://youtube.com/..." value="${escapeHtml(form.youtubeUrl)}" /></label>
       </div>
       <div class="btn-row" style="margin-top:14px">
         <button class="btn btn-primary" id="f-save">경기 정보 저장</button>
@@ -285,6 +289,7 @@ function renderAll() {
   document.getElementById("f-time").addEventListener("change", (e) => (form.time = e.target.value));
   document.getElementById("f-venue").addEventListener("change", (e) => (form.venue = e.target.value));
   document.getElementById("f-opp").addEventListener("change", (e) => (form.opponentName = e.target.value));
+  document.getElementById("f-youtube").addEventListener("change", (e) => (form.youtubeUrl = e.target.value));
   document.getElementById("f-qcount").addEventListener("change", (e) => {
     form.quarterCount = Math.max(1, Number(e.target.value) || 1);
     renderAll();

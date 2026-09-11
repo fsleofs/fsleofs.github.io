@@ -90,7 +90,15 @@ function renderMatch(main, match, players, quarters) {
       <div class="score-grid">
         <div class="side-right">
           <div class="team-name">FS Leo</div>
-          ${ourGoals.map((g) => `<div class="goal-line">${formatSeconds(g.time)} · ${escapeHtml(playerName(players, g.playerId))}${g.assistPlayerId ? ` (도움: ${escapeHtml(playerName(players, g.assistPlayerId))})` : ""}</div>`).join("") || `<div class="goal-line" style="color:var(--ink-3)">-</div>`}
+          ${ourGoals
+            .map(
+              (g) => `
+            <div class="goal-line">
+              <span class="goal-time">${formatSeconds(g.time)}</span><span class="goal-sep"> · </span><span class="goal-scorer">${escapeHtml(playerName(players, g.playerId))}</span>${g.assistPlayerId ? `<span class="goal-assist"> (도움: ${escapeHtml(playerName(players, g.assistPlayerId))})</span>` : ""}
+            </div>
+          `
+            )
+            .join("") || `<div class="goal-line" style="color:var(--ink-3)">-</div>`}
         </div>
         <div class="center">
           <div class="score-big">${score ? `${score.gf} - ${score.ga}` : "vs"}</div>
@@ -239,9 +247,9 @@ function renderRecords(body, match, players, quarters, score, timeline) {
 function playerRowsTable(rows) {
   if (!rows.length) return `<div class="empty-box">기록이 없습니다.</div>`;
   return `
-    <div class="rows-table">
+    <div class="rows-table table-scroll">
       <div class="rt-head">
-        <span>선수</span><span>포지션</span><span class="num">출전시간</span><span class="num">득점</span><span class="num">어시스트</span><span class="num">슛</span>
+        <span>선수</span><span>포지션</span><span class="num">출전시간</span><span class="num">득점</span><span class="num">도움</span><span class="num">슛</span>
       </div>
       ${rows
         .map(

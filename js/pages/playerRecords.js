@@ -8,7 +8,7 @@ const COLUMNS = [
   { key: "appearances", label: "출전", just: "flex-end" },
   { key: "seconds", label: "출전시간", just: "flex-end" },
   { key: "goals", label: "득점", just: "flex-end" },
-  { key: "assists", label: "어시스트", just: "flex-end" },
+  { key: "assists", label: "도움", just: "flex-end" },
   { key: "shots", label: "슛", just: "flex-end" },
 ];
 
@@ -20,7 +20,7 @@ export function render(main) {
       <h1 class="page-title" style="margin:0">선수 기록</h1>
       <input class="search-input" type="text" placeholder="이름으로 검색" id="pr-search" value="${escapeHtml(state.query)}" />
     </div>
-    <div class="panel">
+    <div class="panel table-scroll">
       <div class="pt-head" id="pr-head"></div>
       <div id="pr-rows"></div>
     </div>

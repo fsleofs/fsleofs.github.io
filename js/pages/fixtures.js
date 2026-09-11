@@ -64,20 +64,33 @@ function renderGroups(matches, year, month) {
     })
     .join("");
 
-  box.querySelectorAll("[data-match]").forEach((btn) => {
-    btn.addEventListener("click", () => navigate(`match/${btn.dataset.match}`));
+  box.querySelectorAll("[data-match]").forEach((row) => {
+    const go = () => navigate(`match/${row.dataset.match}`);
+    row.addEventListener("click", go);
+    row.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        go();
+      }
+    });
   });
 }
 
 function matchRow(m) {
   const score = (m.quarters || []).length ? computeMatchScore(m.quarters) : null;
   const scoreText = score ? `${score.gf} - ${score.ga}` : "예정";
+  const hasYoutube = !!m.youtubeUrl;
   return `
-    <button class="list-row" data-match="${m.id}" style="grid-template-columns:80px 1fr 92px 1fr">
+    <div class="list-row fixtures-row${hasYoutube ? " has-yt" : ""}" data-match="${m.id}" role="button" tabindex="0">
       <span class="datecol">${escapeHtml((m.time || "").split("~")[0] || "")}</span>
       <span class="side-r">FS Leo</span>
       <span class="score">${scoreText}</span>
       <span class="side-l">${escapeHtml(m.opponentName || "상대팀")}</span>
-    </button>
+      ${
+        hasYoutube
+          ? `<a class="yt-btn" href="${escapeHtml(m.youtubeUrl)}" target="_blank" rel="noopener" title="유튜브 영상 보기" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M8.4 7.2 13.4 10 8.4 12.8Z" fill="currentColor"/></svg></a>`
+          : ""
+      }
+    </div>
   `;
 }
