@@ -94,7 +94,7 @@ function renderMatch(main, match, players, quarters) {
             .map(
               (g) => `
             <div class="goal-line">
-              <span class="goal-time">${formatSeconds(g.time)}</span><span class="goal-sep"> · </span><span class="goal-scorer">${escapeHtml(playerName(players, g.playerId))}</span>${g.assistPlayerId ? `<span class="goal-assist"> (도움: ${escapeHtml(playerName(players, g.assistPlayerId))})</span>` : ""}
+              <span class="goal-time">${formatSeconds(g.time)}</span><span class="goal-sep"> · </span><span class="goal-scorer">${escapeHtml(playerName(players, g.playerId))}</span>${g.assistPlayerId ? `<span class="goal-assist"> (${escapeHtml(playerName(players, g.assistPlayerId))})</span>` : ""}
             </div>
           `
             )
