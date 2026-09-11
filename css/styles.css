@@ -89,9 +89,10 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
 .list-row .score{text-align:center;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
 .list-row .datecol{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-3)}
 .list-row.fixtures-row{grid-template-columns:80px 1fr 92px 1fr}
-.list-row.fixtures-row.has-yt{grid-template-columns:80px 1fr 92px 1fr 36px}
-.yt-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;justify-self:center}
+.list-row.fixtures-row.has-yt{grid-template-columns:80px 1fr 92px 1fr 92px}
+.yt-btn{display:flex;align-items:center;gap:5px;justify-self:end}
 .yt-btn:hover{opacity:0.85}
+.yt-btn .yt-label{font-size:13px;font-weight:700;color:#FF0000}
 .empty-box{border:1px dashed var(--line);border-radius:14px;padding:48px;text-align:center;color:var(--ink-3);font-size:13.5px}
 
 /* squad */
@@ -260,9 +261,9 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
   .stat-grid{grid-template-columns:1fr}
   .list-row{grid-template-columns:80px 1fr 70px 1fr;padding:10px}
   .list-row.fixtures-row{grid-template-columns:64px 1fr 66px 1fr;gap:10px}
-  .list-row.fixtures-row.has-yt{grid-template-columns:56px 1fr 62px 1fr 30px;gap:6px}
-  .yt-btn{width:24px;height:24px}
-  .yt-btn svg{width:20px;height:20px}
+  .list-row.fixtures-row.has-yt{grid-template-columns:56px 1fr 62px 0.8fr 66px;gap:6px}
+  .yt-btn svg{width:18px;height:18px;flex:0 0 18px}
+  .yt-btn .yt-label{font-size:11px}
   .event-entry-row,.sub-entry-row{grid-template-columns:1fr;gap:8px;padding:12px 0}
   .event-entry-row [data-ev-del],.sub-entry-row [data-sub-del]{justify-self:end;width:64px}
 
