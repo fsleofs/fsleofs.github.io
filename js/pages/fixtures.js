@@ -88,7 +88,10 @@ function matchRow(m) {
       <span class="side-l">${escapeHtml(m.opponentName || "상대팀")}</span>
       ${
         hasYoutube
-          ? `<a class="yt-btn" href="${escapeHtml(m.youtubeUrl)}" target="_blank" rel="noopener" title="유튜브 영상 보기" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M8.4 7.2 13.4 10 8.4 12.8Z" fill="currentColor"/></svg></a>`
+          ? `<a class="yt-btn" href="${escapeHtml(m.youtubeUrl)}" target="_blank" rel="noopener" title="유튜브 영상 보기" onclick="event.stopPropagation()">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M7.8 6.6 14 10 7.8 13.4Z" fill="#fff"/></svg>
+              <span class="yt-label">YouTube</span>
+            </a>`
           : ""
       }
     </div>

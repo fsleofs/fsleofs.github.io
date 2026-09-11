@@ -59,7 +59,7 @@ const NAV_ITEMS = [
 
 const SOCIAL_LINKS = {
   instagram: "https://instagram.com/",
-  youtube: "https://youtube.com/",
+  youtube: "https://www.youtube.com/@leo_fs-q5b",
 };
 
 function applyTheme(theme) {
