@@ -33,7 +33,7 @@ function emptyLive() {
     events: [], // {time, type, playerId?, assistPlayerId?} — time is quarter-relative
     quarterStartOffset: 0, // added to quarter-relative times before saving, to match the continuous match clock
     elapsedSeconds: 0,
-    lastOnPitch: [],
+    allQuarters: [], // raw quarter docs already saved for this match (kept in sync after every save)
     pending: null,
     activeTab: "record", // record | playtime | feed
     expandedPlayerId: null,
@@ -87,36 +87,55 @@ async function loadMatch(matchId) {
   live.matchId = matchId;
   live.quarterCount = match.quarterCount || 5;
   live.lineupPlayerIds = match.lineupPlayerIds || [];
+  live.allQuarters = quarters;
 
   let lastCompletedNumber = 0;
-  let cursor = 0;
-  const sorted = [...quarters].sort((a, b) => a.quarterNumber - b.quarterNumber);
-  for (const q of sorted) {
-    const endTime = getQuarterEndTime(q);
-    if (endTime != null) {
-      lastCompletedNumber = q.quarterNumber;
-      cursor = endTime;
-    }
+  for (const q of quarters) {
+    if (getQuarterEndTime(q) != null) lastCompletedNumber = Math.max(lastCompletedNumber, q.quarterNumber);
   }
-  const nextNumber = lastCompletedNumber + 1;
-  const partial = quarters.find((q) => q.quarterNumber === nextNumber);
+  selectQuarter(lastCompletedNumber + 1);
+}
 
-  live.quarterNumber = nextNumber;
-  live.quarterStartOffset = cursor;
+// Who was on the pitch when this quarter's data last leaves off (its saved substitutions
+// applied on top of its starting lineup) — used to suggest the next quarter's starters.
+function computeEndingRoster(quarter) {
+  if (!quarter) return [];
+  const onPitch = new Set(quarter.startingLineup || []);
+  const subs = [...(quarter.substitutions || [])].sort((a, b) => a.time - b.time);
+  for (const s of subs) {
+    onPitch.delete(s.playerOutId);
+    onPitch.add(s.playerInId);
+  }
+  return [...onPitch];
+}
+
+// Loads a specific quarter number for editing: resumes it if it already has data, otherwise
+// starts a fresh "setup" step with starters suggested from the previous quarter's ending roster.
+// Works whether that quarter is the natural "next" one or one the admin jumped to directly.
+function selectQuarter(quarterNumber) {
+  stopTicker();
+  live.quarterNumber = quarterNumber;
   live.activeTab = "record";
   live.expandedPlayerId = null;
   live.pending = null;
 
-  if (nextNumber > live.quarterCount) {
+  if (quarterNumber > live.quarterCount) {
     live.phase = "all-done";
     renderAll();
     return;
   }
 
-  if (partial && ((partial.events || []).length || (partial.substitutions || []).length)) {
-    resumePartialQuarter(partial);
+  const prevQuarter = live.allQuarters.find((q) => q.quarterNumber === quarterNumber - 1);
+  live.quarterStartOffset = prevQuarter ? getQuarterEndTime(prevQuarter) || 0 : 0;
+
+  const thisQuarter = live.allQuarters.find((q) => q.quarterNumber === quarterNumber);
+  const endTime = thisQuarter ? getQuarterEndTime(thisQuarter) : null;
+  if (thisQuarter && endTime != null) {
+    loadFinishedQuarter(thisQuarter, endTime);
+  } else if (thisQuarter && ((thisQuarter.events || []).length || (thisQuarter.substitutions || []).length)) {
+    resumePartialQuarter(thisQuarter);
   } else {
-    live.startingLineup = (live.lastOnPitch || []).filter((id) => live.lineupPlayerIds.includes(id));
+    live.startingLineup = computeEndingRoster(prevQuarter).filter((id) => live.lineupPlayerIds.includes(id));
     live.onPitchSince = {};
     live.stintLog = {};
     live.substitutions = [];
@@ -125,6 +144,14 @@ async function loadMatch(matchId) {
     live.phase = "setup";
   }
   renderAll();
+}
+
+function quarterStatus(n) {
+  const q = live.allQuarters.find((qq) => qq.quarterNumber === n);
+  if (!q) return "empty";
+  if (getQuarterEndTime(q) != null) return "done";
+  if ((q.events || []).length || (q.substitutions || []).length) return "partial";
+  return "empty";
 }
 
 function resumePartialQuarter(partial) {
@@ -153,6 +180,40 @@ function resumePartialQuarter(partial) {
   startTicker();
 }
 
+// Loads a quarter that already has its "쿼터 종료" event — a frozen, view-only snapshot as
+// of when it ended, not something to keep ticking. All stints are closed out at end time,
+// so nobody shows as "currently on pitch".
+function loadFinishedQuarter(quarter, endTimeAbsolute) {
+  const relEnd = endTimeAbsolute - live.quarterStartOffset;
+  live.startingLineup = quarter.startingLineup || [];
+
+  const onPitchSince = {};
+  for (const pid of live.startingLineup) onPitchSince[pid] = 0;
+  live.stintLog = {};
+
+  const subs = [...(quarter.substitutions || [])].sort((a, b) => a.time - b.time).map((s) => ({ ...s, time: s.time - live.quarterStartOffset }));
+  for (const s of subs) {
+    if (onPitchSince[s.playerOutId] != null) {
+      if (!live.stintLog[s.playerOutId]) live.stintLog[s.playerOutId] = [];
+      live.stintLog[s.playerOutId].push({ start: onPitchSince[s.playerOutId], end: s.time });
+      delete onPitchSince[s.playerOutId];
+    }
+    onPitchSince[s.playerInId] = s.time;
+  }
+  for (const pid of Object.keys(onPitchSince)) {
+    if (!live.stintLog[pid]) live.stintLog[pid] = [];
+    live.stintLog[pid].push({ start: onPitchSince[pid], end: relEnd });
+  }
+
+  live.onPitchSince = {}; // the quarter is over — nobody is "currently" on pitch
+  live.substitutions = subs;
+  live.events = (quarter.events || [])
+    .filter((e) => e.type !== EVENT_TYPES.QUARTER_END)
+    .map((e) => ({ ...e, time: e.time - live.quarterStartOffset }));
+  live.elapsedSeconds = relEnd;
+  live.phase = "ended";
+}
+
 async function saveProgress() {
   if (!live.matchId) return;
   const payload = {
@@ -163,6 +224,9 @@ async function saveProgress() {
   };
   try {
     await setQuarter(live.matchId, live.quarterNumber, payload);
+    const idx = live.allQuarters.findIndex((q) => q.quarterNumber === live.quarterNumber);
+    if (idx >= 0) live.allQuarters[idx] = payload;
+    else live.allQuarters.push(payload);
   } catch (e) {
     live.status = "저장 실패: " + e.message;
     renderAll();
@@ -304,7 +368,6 @@ async function endQuarter() {
   }
   live.onPitchSince = {};
   live.events.push({ time: live.elapsedSeconds, type: EVENT_TYPES.QUARTER_END });
-  live.lastOnPitch = endingIds;
   live.phase = "ended";
   live.status = "저장 중…";
   renderAll();
@@ -314,23 +377,7 @@ async function endQuarter() {
 }
 
 function goToNextQuarter() {
-  const prevEndAbsolute = live.quarterStartOffset + live.elapsedSeconds;
-  const nextStarters = live.lastOnPitch.filter((id) => live.lineupPlayerIds.includes(id));
-
-  live.quarterNumber += 1;
-  live.quarterStartOffset = prevEndAbsolute;
-  live.elapsedSeconds = 0;
-  live.startingLineup = nextStarters;
-  live.onPitchSince = {};
-  live.stintLog = {};
-  live.substitutions = [];
-  live.events = [];
-  live.pending = null;
-  live.activeTab = "record";
-  live.expandedPlayerId = null;
-  live.status = "";
-  live.phase = live.quarterNumber > live.quarterCount ? "all-done" : "setup";
-  renderAll();
+  selectQuarter(live.quarterNumber + 1);
 }
 
 function onEventBtn(type) {
@@ -437,11 +484,29 @@ function updateMatchPickerOptions() {
       .join("");
 }
 
+function quarterPickerHtml() {
+  const buttons = Array.from({ length: live.quarterCount }, (_, i) => i + 1)
+    .map((n) => {
+      const status = quarterStatus(n);
+      const active = n === live.quarterNumber;
+      const statusColor = status === "done" ? "var(--win)" : status === "partial" ? "var(--acc)" : "var(--line)";
+      const style = active
+        ? "background:var(--acc);border-color:var(--acc);color:var(--acc-ink)"
+        : `border-color:${statusColor};color:${status === "empty" ? "var(--ink-2)" : statusColor}`;
+      return `<button class="qbtn" data-q-select="${n}" style="min-width:56px;width:auto;padding:0 10px;${style}">${n}쿼터${status === "done" ? " ✓" : ""}</button>`;
+    })
+    .join("");
+  return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${buttons}</div>`;
+}
+
 function bindMatchPickerArea() {
   updateMatchPickerOptions();
   document.getElementById("live-match-picker").addEventListener("change", (e) => loadMatch(e.target.value));
   const exportBtn = document.getElementById("export-txt");
   if (exportBtn) exportBtn.addEventListener("click", exportRecordTxt);
+  rootEl.querySelectorAll("[data-q-select]").forEach((btn) => {
+    btn.addEventListener("click", () => selectQuarter(Number(btn.dataset.qSelect)));
+  });
 }
 
 function renderAll() {
@@ -455,13 +520,14 @@ function renderAll() {
   }
 
   if (live.phase === "all-done") {
-    main.innerHTML = `${matchPickerHtml()}<div class="empty-box">이 경기의 모든 쿼터(${live.quarterCount}개) 기록이 끝났습니다.</div>`;
+    main.innerHTML = `${matchPickerHtml()}${quarterPickerHtml()}<div class="empty-box">이 경기의 모든 쿼터(${live.quarterCount}개) 기록이 끝났습니다. 위에서 쿼터를 눌러 다시 열어볼 수 있습니다.</div>`;
     bindMatchPickerArea();
     return;
   }
 
   main.innerHTML = `
     ${matchPickerHtml()}
+    ${quarterPickerHtml()}
     <div class="live-header">
       <div class="live-quarter">${live.quarterNumber}쿼터</div>
       <div class="live-clock mono" id="live-clock">${formatSeconds(live.elapsedSeconds)}</div>
