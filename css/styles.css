@@ -261,6 +261,7 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
 .live-event-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .live-event-btn{padding:20px 10px;border:0;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;text-align:center}
 .live-sub-btn{grid-column:span 2;background:var(--panel-2);color:var(--ink);border:1px solid var(--line)}
+.live-endq-btn{grid-column:span 2;background:transparent;color:var(--lose);border:1px solid var(--lose)}
 .live-playtime-row{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-top:1px solid var(--line);cursor:pointer;font-size:14px}
 .live-playtime-row:first-child{border-top:0}
 .live-playtime-row:hover{background:var(--panel-2)}

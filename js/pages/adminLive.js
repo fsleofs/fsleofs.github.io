@@ -169,6 +169,68 @@ async function saveProgress() {
   }
 }
 
+// ---------- export ----------
+
+// Builds one chronological line per event/substitution. Quarter 2+ times are already
+// stored as continuous match-clock seconds (see saveProgress's quarterStartOffset), so
+// formatting the stored time directly gives times that keep adding onto the previous
+// quarter's — no extra math needed here.
+function eventLineText(e) {
+  let line = eventLabel(e.type);
+  if (e.playerId) {
+    line += ` - ${nameOf(e.playerId)}`;
+    if (e.assistPlayerId) line += ` (도움: ${nameOf(e.assistPlayerId)})`;
+  }
+  return line;
+}
+
+function buildExportText(match, quarters) {
+  const sorted = [...quarters].sort((a, b) => a.quarterNumber - b.quarterNumber);
+  let text = `FS Leo vs ${match.opponentName || "상대팀"} (${match.date || ""})\n\n`;
+  for (const q of sorted) {
+    text += `[${q.quarterNumber}쿼터]\n`;
+    if ((q.startingLineup || []).length) {
+      text += `시작: ${q.startingLineup.map((id) => nameOf(id)).join(", ")}\n`;
+    }
+    const items = [
+      ...(q.events || []).map((e) => ({ time: e.time, text: eventLineText(e) })),
+      ...(q.substitutions || []).map((s) => ({ time: s.time, text: `교체: ${nameOf(s.playerOutId)} → ${nameOf(s.playerInId)}` })),
+    ].sort((a, b) => a.time - b.time);
+    for (const it of items) {
+      text += `${formatSeconds(it.time)} ${it.text}\n`;
+    }
+    text += `\n`;
+  }
+  return text;
+}
+
+function downloadTextFile(text, filename) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function exportRecordTxt() {
+  if (!live.matchId) return;
+  const btn = document.getElementById("export-txt");
+  if (btn) btn.disabled = true;
+  try {
+    const match = await getMatch(live.matchId);
+    const quarters = await getQuarters(live.matchId);
+    const text = buildExportText(match, quarters);
+    const safe = (s) => (s || "").replace(/[\\/:*?"<>|]/g, "");
+    downloadTextFile(text, `FSLeo_vs_${safe(match.opponentName) || "상대팀"}_${match.date || "날짜없음"}.txt`);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 // ---------- clock ----------
 
 function startTicker() {
@@ -358,6 +420,7 @@ function matchPickerHtml() {
       <label class="field"><span class="lab">기록할 경기</span>
         <select id="live-match-picker"><option value="">경기를 선택하세요</option></select>
       </label>
+      ${live.matchId ? `<div class="btn-row" style="margin-top:12px"><button class="btn" id="export-txt">TXT로 내보내기 (전체 쿼터)</button></div>` : ""}
       ${live.status ? `<div class="small-note">${escapeHtml(live.status)}</div>` : ""}
     </div>
   `;
@@ -374,21 +437,26 @@ function updateMatchPickerOptions() {
       .join("");
 }
 
+function bindMatchPickerArea() {
+  updateMatchPickerOptions();
+  document.getElementById("live-match-picker").addEventListener("change", (e) => loadMatch(e.target.value));
+  const exportBtn = document.getElementById("export-txt");
+  if (exportBtn) exportBtn.addEventListener("click", exportRecordTxt);
+}
+
 function renderAll() {
   const main = rootEl;
   if (!main || !live) return;
 
   if (live.phase === "pick-match") {
     main.innerHTML = matchPickerHtml();
-    updateMatchPickerOptions();
-    document.getElementById("live-match-picker").addEventListener("change", (e) => loadMatch(e.target.value));
+    bindMatchPickerArea();
     return;
   }
 
   if (live.phase === "all-done") {
     main.innerHTML = `${matchPickerHtml()}<div class="empty-box">이 경기의 모든 쿼터(${live.quarterCount}개) 기록이 끝났습니다.</div>`;
-    updateMatchPickerOptions();
-    document.getElementById("live-match-picker").addEventListener("change", (e) => loadMatch(e.target.value));
+    bindMatchPickerArea();
     return;
   }
 
@@ -406,8 +474,7 @@ function renderAll() {
     ${live.phase === "running" || live.phase === "ended" ? tabsHtml() : ""}
   `;
 
-  updateMatchPickerOptions();
-  document.getElementById("live-match-picker").addEventListener("change", (e) => loadMatch(e.target.value));
+  bindMatchPickerArea();
 
   if (live.phase === "setup") {
     main.querySelectorAll("[data-starter]").forEach((btn) => {
@@ -519,6 +586,7 @@ function renderRecordTab() {
     <div class="live-event-grid">
       ${EVENT_BUTTONS.map((b) => `<button class="live-event-btn" data-event-btn="${b.type}" style="background:${b.color};color:${b.ink}">${escapeHtml(b.label)}</button>`).join("")}
       <button class="live-event-btn live-sub-btn" id="sub-btn">교체</button>
+      <button class="live-event-btn live-endq-btn" id="endq-btn-grid">쿼터 종료</button>
     </div>
     ${pickerHtml}
   `;
@@ -528,6 +596,8 @@ function renderRecordTab() {
   });
   const subBtn = document.getElementById("sub-btn");
   if (subBtn) subBtn.addEventListener("click", onSubBtn);
+  const endQGridBtn = document.getElementById("endq-btn-grid");
+  if (endQGridBtn) endQGridBtn.addEventListener("click", endQuarter);
   body.querySelectorAll("[data-pick-player]").forEach((btn) => {
     btn.addEventListener("click", () => onPickPlayer(btn.dataset.pickPlayer));
   });
