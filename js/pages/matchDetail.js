@@ -303,13 +303,10 @@ function renderQuarterProgress(body, players, quarters, quarterCount) {
                 .sort((a, b) => a.time - b.time)
                 .map((e) => {
                   const info = EVENT_KIND_INFO[e.type];
-                  const who =
-                    e.type === EVENT_TYPES.GOAL_FOR || e.type === EVENT_TYPES.SHOT_FOR
-                      ? escapeHtml(playerName(players, e.playerId)) +
-                        (e.type === EVENT_TYPES.GOAL_FOR && e.assistPlayerId
-                          ? ` (도움: ${escapeHtml(playerName(players, e.assistPlayerId))})`
-                          : "")
-                      : "-";
+                  const who = e.playerId
+                    ? escapeHtml(playerName(players, e.playerId)) +
+                      (e.assistPlayerId ? ` (도움: ${escapeHtml(playerName(players, e.assistPlayerId))})` : "")
+                    : "-";
                   return `
               <div class="qevent-row">
                 <span class="t mono" style="color:var(--ink-3)">${formatSeconds(e.time)}</span>
