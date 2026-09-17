@@ -254,6 +254,19 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
 
 .loading{padding:40px;text-align:center;color:var(--ink-3);font-size:13px}
 
+/* live recorder */
+.live-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.live-quarter{font-size:15px;font-weight:700;color:var(--ink-2)}
+.live-clock{font-size:30px;font-weight:700;letter-spacing:-0.02em}
+.live-event-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.live-event-btn{padding:20px 10px;border:0;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;text-align:center}
+.live-sub-btn{grid-column:span 2;background:var(--panel-2);color:var(--ink);border:1px solid var(--line)}
+.live-playtime-row{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-top:1px solid var(--line);cursor:pointer;font-size:14px}
+.live-playtime-row:first-child{border-top:0}
+.live-playtime-row:hover{background:var(--panel-2)}
+.live-feed-row{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:10px 18px;border-top:1px solid var(--line)}
+.live-feed-row:first-child{border-top:0}
+
 @media (max-width: 860px){
   .app-shell{flex-direction:column;align-items:stretch}
   .sidebar{position:relative;width:100%;flex:none;height:auto}

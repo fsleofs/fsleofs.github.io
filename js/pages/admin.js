@@ -1,8 +1,9 @@
 import { loginAdmin, logoutAdmin, onAuthChange } from "../firebase.js";
 import * as AdminPlayers from "./adminPlayers.js";
 import * as AdminMatchForm from "./adminMatchForm.js";
+import * as AdminLive from "./adminLive.js";
 
-const state = { tab: "match" }; // match | players
+const state = { tab: "match" }; // match | live | players
 
 export function render(main) {
   let subCleanup = null;
@@ -27,10 +28,11 @@ export function render(main) {
       });
     });
     const body = document.getElementById("admin-tab-body");
-    // AdminMatchForm.render is async (it awaits the player list) while
-    // AdminPlayers.render is sync; await works for both since awaiting a
+    // AdminMatchForm/AdminLive.render are async (they await the player list) while
+    // AdminPlayers.render is sync; await works for all since awaiting a
     // non-promise just resolves immediately with that value.
-    subCleanup = await (state.tab === "match" ? AdminMatchForm.render(body) : AdminPlayers.render(body));
+    const pageModule = state.tab === "match" ? AdminMatchForm : state.tab === "live" ? AdminLive : AdminPlayers;
+    subCleanup = await pageModule.render(body);
   }
 
   const unsubAuth = onAuthChange(draw);
@@ -86,6 +88,7 @@ function authedShell() {
     </div>
     <div class="tabs">
       <button class="tab-btn big" data-atab="match">경기 기록 입력</button>
+      <button class="tab-btn big" data-atab="live">실시간 기록</button>
       <button class="tab-btn big" data-atab="players">선수 관리</button>
     </div>
     <div id="admin-tab-body"></div>

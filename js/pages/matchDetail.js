@@ -15,6 +15,8 @@ const EVENT_KIND_INFO = {
   [EVENT_TYPES.GOAL_AGAINST]: { label: "실점", color: "var(--lose)" },
   [EVENT_TYPES.SHOT_FOR]: { label: "슛", color: "var(--acc)" },
   [EVENT_TYPES.SHOT_AGAINST]: { label: "허용한 슈팅", color: "var(--ink-2)" },
+  [EVENT_TYPES.KEY_DEFENSE]: { label: "결정적 수비", color: "var(--ink)" },
+  [EVENT_TYPES.COUNTER_ATTACK]: { label: "역습", color: "var(--acc)" },
 };
 const PROGRESS_EVENT_TYPES = new Set(Object.keys(EVENT_KIND_INFO));
 
