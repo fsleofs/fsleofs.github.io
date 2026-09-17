@@ -11,6 +11,7 @@
   --win: oklch(0.740 0.150 152);
   --lose: oklch(0.640 0.190 18);
   --draw: oklch(0.540 0.004 60);
+  --info: oklch(0.680 0.170 250);
   --stripe: oklch(0.212 0.005 60);
 }
 :root[data-theme="light"]{
@@ -26,6 +27,7 @@
   --win: oklch(0.520 0.135 152);
   --lose: oklch(0.545 0.185 20);
   --draw: oklch(0.630 0.004 60);
+  --info: oklch(0.560 0.160 250);
   --stripe: oklch(0.925 0.004 60);
 }
 *{box-sizing:border-box}

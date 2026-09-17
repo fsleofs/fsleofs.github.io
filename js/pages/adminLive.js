@@ -5,10 +5,10 @@ import { escapeHtml, formatDate } from "../util.js";
 // Event buttons shown on the "기록" tab. needsPlayer/needsAssist drive whether tapping
 // the button immediately logs the event, or opens the player (then assist) picker first.
 const EVENT_BUTTONS = [
-  { type: EVENT_TYPES.GOAL_FOR, label: "득점", needsPlayer: true, needsAssist: true, color: "var(--win)", ink: "var(--acc-ink)" },
-  { type: EVENT_TYPES.SHOT_FOR, label: "슛", needsPlayer: true, needsAssist: false, color: "var(--acc)", ink: "var(--acc-ink)" },
-  { type: EVENT_TYPES.KEY_DEFENSE, label: "결정적 수비", needsPlayer: true, needsAssist: false, color: "var(--panel-2)", ink: "var(--ink)" },
-  { type: EVENT_TYPES.COUNTER_ATTACK, label: "역습", needsPlayer: false, needsAssist: false, color: "var(--panel-2)", ink: "var(--ink)" },
+  { type: EVENT_TYPES.GOAL_FOR, label: "득점", needsPlayer: true, needsAssist: true, color: "var(--info)", ink: "#fff" },
+  { type: EVENT_TYPES.SHOT_FOR, label: "슛", needsPlayer: true, needsAssist: false, color: "var(--info)", ink: "#fff" },
+  { type: EVENT_TYPES.KEY_DEFENSE, label: "결정적 수비", needsPlayer: true, needsAssist: false, color: "var(--win)", ink: "var(--acc-ink)" },
+  { type: EVENT_TYPES.COUNTER_ATTACK, label: "역습", needsPlayer: false, needsAssist: false, color: "var(--win)", ink: "var(--acc-ink)" },
   { type: EVENT_TYPES.GOAL_AGAINST, label: "실점", needsPlayer: false, needsAssist: false, color: "var(--lose)", ink: "#fff" },
   { type: EVENT_TYPES.SHOT_AGAINST, label: "허용한 슛", needsPlayer: false, needsAssist: false, color: "var(--lose)", ink: "#fff" },
 ];
