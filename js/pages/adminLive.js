@@ -381,18 +381,22 @@ function goToNextQuarter() {
   selectQuarter(live.quarterNumber + 1);
 }
 
+// Every pending action captures elapsedSeconds the instant it starts (button tap), not
+// when it's finally confirmed — picking a player (or two, for a substitution) takes a
+// few seconds, and that lag shouldn't leak into the recorded time.
 function onEventBtn(type) {
   const cfg = EVENT_BUTTONS.find((b) => b.type === type);
+  const time = live.elapsedSeconds;
   if (!cfg.needsPlayer) {
-    commitEvent(type, null, null);
+    commitEvent(type, null, null, time);
     return;
   }
-  live.pending = { kind: "event", eventType: type, needsAssist: cfg.needsAssist, stage: "player" };
+  live.pending = { kind: "event", eventType: type, needsAssist: cfg.needsAssist, stage: "player", time };
   renderAll();
 }
 
 function onSubBtn() {
-  live.pending = { kind: "sub", stage: "out" };
+  live.pending = { kind: "sub", stage: "out", time: live.elapsedSeconds };
   renderAll();
 }
 
@@ -401,8 +405,8 @@ function onCancelPending() {
   renderAll();
 }
 
-function commitEvent(eventType, playerId, assistPlayerId) {
-  const ev = { time: live.elapsedSeconds, type: eventType };
+function commitEvent(eventType, playerId, assistPlayerId, time) {
+  const ev = { time, type: eventType };
   if (playerId) ev.playerId = playerId;
   if (assistPlayerId) ev.assistPlayerId = assistPlayerId;
   live.events.push(ev);
@@ -411,15 +415,15 @@ function commitEvent(eventType, playerId, assistPlayerId) {
   renderAll();
 }
 
-function commitSub(outId, inId) {
+function commitSub(outId, inId, time) {
   const start = live.onPitchSince[outId];
   if (start != null) {
     if (!live.stintLog[outId]) live.stintLog[outId] = [];
-    live.stintLog[outId].push({ start, end: live.elapsedSeconds });
+    live.stintLog[outId].push({ start, end: time });
     delete live.onPitchSince[outId];
   }
-  live.onPitchSince[inId] = live.elapsedSeconds;
-  live.substitutions.push({ time: live.elapsedSeconds, playerInId: inId, playerOutId: outId });
+  live.onPitchSince[inId] = time;
+  live.substitutions.push({ time, playerInId: inId, playerOutId: outId });
   live.pending = null;
   saveProgress();
   renderAll();
@@ -431,20 +435,20 @@ function onPickPlayer(pid) {
   if (p.kind === "event") {
     if (p.stage === "player") {
       if (p.needsAssist) {
-        live.pending = { kind: "event", eventType: p.eventType, needsAssist: true, stage: "assist", playerId: pid };
+        live.pending = { kind: "event", eventType: p.eventType, needsAssist: true, stage: "assist", playerId: pid, time: p.time };
         renderAll();
       } else {
-        commitEvent(p.eventType, pid, null);
+        commitEvent(p.eventType, pid, null, p.time);
       }
     } else if (p.stage === "assist") {
-      commitEvent(p.eventType, p.playerId, pid);
+      commitEvent(p.eventType, p.playerId, pid, p.time);
     }
   } else if (p.kind === "sub") {
     if (p.stage === "out") {
-      live.pending = { kind: "sub", stage: "in", outId: pid };
+      live.pending = { kind: "sub", stage: "in", outId: pid, time: p.time };
       renderAll();
     } else {
-      commitSub(p.outId, pid);
+      commitSub(p.outId, pid, p.time);
     }
   }
 }
@@ -671,7 +675,7 @@ function renderRecordTab() {
   const cancelBtn = document.getElementById("cancel-pending");
   if (cancelBtn) cancelBtn.addEventListener("click", onCancelPending);
   const skipAssistBtn = document.getElementById("skip-assist");
-  if (skipAssistBtn) skipAssistBtn.addEventListener("click", () => commitEvent(p.eventType, p.playerId, null));
+  if (skipAssistBtn) skipAssistBtn.addEventListener("click", () => commitEvent(p.eventType, p.playerId, null, p.time));
 }
 
 function stintDetailHtml(pid) {
