@@ -349,14 +349,19 @@ function renderQuarterSections(q, d, lineupPlayers) {
       <div style="display:flex;flex-direction:column;gap:10px">
         <button class="radio-btn ${form.timeInputMode === "absolute" ? "active" : ""}" data-time-mode="absolute" style="justify-content:flex-start">
           <span class="radio-dot"><span class="radio-fill"></span></span>
-          <span>경기 전체 시간 그대로 <span style="color:var(--ink-3)">(예: 2쿼터 5:00 경과 → 15:00)</span></span>
+          <span>경기 전체 시간 그대로</span>
         </button>
         <button class="radio-btn ${form.timeInputMode === "relative" ? "active" : ""}" data-time-mode="relative" style="justify-content:flex-start">
           <span class="radio-dot"><span class="radio-fill"></span></span>
-          <span>이 쿼터 시작을 0:00으로 <span style="color:var(--ink-3)">(자동으로 이전 쿼터 시간 합산)</span></span>
+          <span>이 쿼터 시작을 0:00으로</span>
         </button>
       </div>
-      ${form.timeInputMode === "relative" ? `<p class="small-note" style="margin:10px 0 0">이 쿼터(${q}쿼터) 시작 시각(자동 감지): <span class="mono" style="color:var(--acc)">${formatSeconds(quarterStartTime)}</span></p>` : ""}
+      <div class="warn-box" style="margin:12px 0 0">
+        예시 — 지금 <b>${q}쿼터</b>이고 시작 시각은 자동 감지로 <b class="mono">${formatSeconds(quarterStartTime)}</b>입니다. 이 쿼터에서 5:00 지난 시점에 이벤트가 있었다면:<br>
+        · <b>경기 전체 시간 그대로</b>를 선택했다면 시간 칸에 <b class="mono">${formatSeconds(quarterStartTime + 300)}</b>를 직접 계산해서 입력해야 합니다.<br>
+        · <b>이 쿼터 시작을 0:00으로</b>를 선택했다면 시간 칸에 그냥 <b class="mono">5:00</b>만 입력하면, ${formatSeconds(quarterStartTime)}가 자동으로 더해져 <b class="mono">${formatSeconds(quarterStartTime + 300)}</b>로 저장됩니다.<br>
+        두 방식 모두 최종 저장값은 동일하고, 표에 뭘 타이핑하느냐만 다릅니다.
+      </div>
     </section>
 
     <section class="panel panel-pad" style="margin-bottom:16px">
