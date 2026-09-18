@@ -9,6 +9,7 @@ export const EVENT_TYPES = {
   SHOT_AGAINST: "허용한 슈팅",
   KEY_DEFENSE: "결정적 수비",
   COUNTER_ATTACK: "역습",
+  SHOT_BLOCK: "슛 블록",
   QUARTER_END: "쿼터 종료",
 };
 

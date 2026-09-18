@@ -6,12 +6,15 @@ import { listenPlayers, listenMatches, fetchAllMatchesWithQuarters } from "../da
 export function subscribeSeasonData(cb) {
   let players = [];
   let timer = null;
+  let cancelled = false;
 
   function scheduleRefresh() {
     if (timer) clearTimeout(timer);
     timer = setTimeout(async () => {
       const matches = await fetchAllMatchesWithQuarters();
-      cb(players, matches);
+      // The page may have navigated away while that fetch was in flight — clearing the
+      // timer alone can't stop an already-running async call, so re-check before touching DOM.
+      if (!cancelled) cb(players, matches);
     }, 50);
   }
 
@@ -24,6 +27,7 @@ export function subscribeSeasonData(cb) {
   });
 
   return () => {
+    cancelled = true;
     if (timer) clearTimeout(timer);
     unsubPlayers();
     unsubMatches();
