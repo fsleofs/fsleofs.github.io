@@ -95,8 +95,8 @@ export function computeMatchScore(quarters) {
   let gf = 0, ga = 0, shotsFor = 0, shotsAgainst = 0;
   for (const q of quarters || []) {
     for (const e of q.events || []) {
-      if (e.type === EVENT_TYPES.GOAL_FOR) gf++;
-      else if (e.type === EVENT_TYPES.GOAL_AGAINST) ga++;
+      if (e.type === EVENT_TYPES.GOAL_FOR) { gf++; shotsFor++; }
+      else if (e.type === EVENT_TYPES.GOAL_AGAINST) { ga++; shotsAgainst++; }
       else if (e.type === EVENT_TYPES.SHOT_FOR) shotsFor++;
       else if (e.type === EVENT_TYPES.SHOT_AGAINST) shotsAgainst++;
     }
@@ -141,7 +141,10 @@ export function computePlayerRows(players, quarters, onlyQuarterNumber = null) {
   for (const { quarter: q } of withOffsets) {
     for (const e of q.events || []) {
       if (e.type === EVENT_TYPES.GOAL_FOR) {
-        if (e.playerId) goals.set(e.playerId, (goals.get(e.playerId) || 0) + 1);
+        if (e.playerId) {
+          goals.set(e.playerId, (goals.get(e.playerId) || 0) + 1);
+          shots.set(e.playerId, (shots.get(e.playerId) || 0) + 1);
+        }
         if (e.assistPlayerId) assists.set(e.assistPlayerId, (assists.get(e.assistPlayerId) || 0) + 1);
       } else if (e.type === EVENT_TYPES.SHOT_FOR) {
         if (e.playerId) shots.set(e.playerId, (shots.get(e.playerId) || 0) + 1);
