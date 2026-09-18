@@ -346,11 +346,17 @@ function renderQuarterSections(q, d, lineupPlayers) {
 
     <section class="panel panel-pad" style="margin-bottom:16px">
       <div class="section-label">시간 입력 방식</div>
-      <select id="f-time-mode" style="max-width:320px">
-        <option value="absolute" ${form.timeInputMode === "absolute" ? "selected" : ""}>경기 전체 시간 그대로 (예: 2쿼터 5:00 경과 → 15:00)</option>
-        <option value="relative" ${form.timeInputMode === "relative" ? "selected" : ""}>이 쿼터 시작을 0:00으로 (자동으로 이전 쿼터 시간 합산)</option>
-      </select>
-      ${form.timeInputMode === "relative" ? `<p class="small-note" style="margin:8px 0 0">이 쿼터(${q}쿼터) 시작 시각(자동 감지): <span class="mono" style="color:var(--acc)">${formatSeconds(quarterStartTime)}</span></p>` : ""}
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="radio-btn ${form.timeInputMode === "absolute" ? "active" : ""}" data-time-mode="absolute" style="justify-content:flex-start">
+          <span class="radio-dot"><span class="radio-fill"></span></span>
+          <span>경기 전체 시간 그대로 <span style="color:var(--ink-3)">(예: 2쿼터 5:00 경과 → 15:00)</span></span>
+        </button>
+        <button class="radio-btn ${form.timeInputMode === "relative" ? "active" : ""}" data-time-mode="relative" style="justify-content:flex-start">
+          <span class="radio-dot"><span class="radio-fill"></span></span>
+          <span>이 쿼터 시작을 0:00으로 <span style="color:var(--ink-3)">(자동으로 이전 쿼터 시간 합산)</span></span>
+        </button>
+      </div>
+      ${form.timeInputMode === "relative" ? `<p class="small-note" style="margin:10px 0 0">이 쿼터(${q}쿼터) 시작 시각(자동 감지): <span class="mono" style="color:var(--acc)">${formatSeconds(quarterStartTime)}</span></p>` : ""}
     </section>
 
     <section class="panel panel-pad" style="margin-bottom:16px">
@@ -499,13 +505,12 @@ function bindQuarterSectionEvents(q, d) {
       renderAll();
     });
   });
-  const timeModeSelect = document.getElementById("f-time-mode");
-  if (timeModeSelect) {
-    timeModeSelect.addEventListener("change", (e) => {
-      form.timeInputMode = e.target.value;
+  main.querySelectorAll("[data-time-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      form.timeInputMode = btn.dataset.timeMode;
       renderAll();
     });
-  }
+  });
   main.querySelectorAll("[data-starter]").forEach((btn) => {
     btn.addEventListener("click", () => toggleStarter(q, btn.dataset.starter));
   });
