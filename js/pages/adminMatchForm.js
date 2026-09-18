@@ -23,6 +23,11 @@ const EVENT_KIND_OPTIONS = [
 ];
 const NEEDS_PLAYER = new Set([EVENT_TYPES.GOAL_FOR, EVENT_TYPES.SHOT_FOR, EVENT_TYPES.KEY_DEFENSE, EVENT_TYPES.SHOT_BLOCK]);
 const NEEDS_ASSIST = new Set([EVENT_TYPES.GOAL_FOR]);
+// Display-only labels, decoupled from the EVENT_TYPES values already saved in Firestore
+// so renaming a category here doesn't break matching against existing recorded events.
+const EVENT_KIND_LABELS = {
+  [EVENT_TYPES.KEY_DEFENSE]: "태클&인터셉트",
+};
 
 let players = [];
 let matchesList = [];
@@ -461,7 +466,7 @@ function eventRowHtml(ev, idx, lineupPlayers) {
       <label class="field"><span class="lab">시간</span><input type="text" class="mono" placeholder="0:00" value="${formatSeconds(toDisplaySeconds(ev.time))}" data-ev-time="${idx}" /></label>
       <label class="field"><span class="lab">항목</span>
         <select data-ev-type="${idx}">
-          ${EVENT_KIND_OPTIONS.map((k) => `<option value="${k}" ${k === ev.type ? "selected" : ""}>${k}</option>`).join("")}
+          ${EVENT_KIND_OPTIONS.map((k) => `<option value="${k}" ${k === ev.type ? "selected" : ""}>${EVENT_KIND_LABELS[k] || k}</option>`).join("")}
         </select>
       </label>
       <label class="field"><span class="lab">이름</span>

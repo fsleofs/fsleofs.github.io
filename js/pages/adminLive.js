@@ -7,7 +7,7 @@ import { escapeHtml, formatDate } from "../util.js";
 const EVENT_BUTTONS = [
   { type: EVENT_TYPES.GOAL_FOR, label: "득점", needsPlayer: true, needsAssist: true, color: "var(--info)", ink: "#fff" },
   { type: EVENT_TYPES.SHOT_FOR, label: "슛", needsPlayer: true, needsAssist: false, color: "var(--info)", ink: "#fff" },
-  { type: EVENT_TYPES.KEY_DEFENSE, label: "결정적 수비", needsPlayer: true, needsAssist: false, color: "var(--win)", ink: "var(--acc-ink)" },
+  { type: EVENT_TYPES.KEY_DEFENSE, label: "태클&인터셉트", needsPlayer: true, needsAssist: false, color: "var(--win)", ink: "var(--acc-ink)" },
   { type: EVENT_TYPES.COUNTER_ATTACK, label: "역습", needsPlayer: false, needsAssist: false, color: "var(--win)", ink: "var(--acc-ink)" },
   { type: EVENT_TYPES.SHOT_BLOCK, label: "슛 블록", needsPlayer: true, needsAssist: false, color: "var(--win)", ink: "var(--acc-ink)" },
   { type: EVENT_TYPES.GOAL_AGAINST, label: "실점", needsPlayer: false, needsAssist: false, color: "var(--lose)", ink: "#fff" },
