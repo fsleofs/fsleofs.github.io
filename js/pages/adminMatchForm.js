@@ -42,6 +42,7 @@ function emptyForm() {
     lineupPlayerIds: [],
     activeQuarter: 1,
     quarterDrafts: {},
+    timeInputMode: "absolute", // "absolute" (경기 전체 시간 그대로) | "relative" (이 쿼터 0:00부터, 자동 합산)
   };
 }
 
@@ -63,6 +64,23 @@ function draftsArray() {
     arr.push({ quarterNumber: n, ...draft(n) });
   }
   return arr;
+}
+
+function getQuarterStartTime(qNum) {
+  const entry = computeQuartersWithOffsets(draftsArray()).find((w) => w.quarter.quarterNumber === qNum);
+  return entry ? entry.startTime : 0;
+}
+
+// Time fields always store/display in seconds; in "relative" mode the value shown/typed is
+// relative to the active quarter's start, converted to/from the absolute continuous-match
+// seconds that get saved (see saveQuarter) — "absolute" mode is a straight passthrough.
+function toDisplaySeconds(absoluteSeconds) {
+  if (form.timeInputMode !== "relative") return absoluteSeconds;
+  return Math.max(0, absoluteSeconds - getQuarterStartTime(form.activeQuarter));
+}
+function fromDisplaySeconds(displaySeconds) {
+  if (form.timeInputMode !== "relative") return displaySeconds;
+  return displaySeconds + getQuarterStartTime(form.activeQuarter);
 }
 
 function playerName(id) {
@@ -208,7 +226,7 @@ function toggleStarter(qNum, playerId) {
 }
 
 function addEventRow(qNum) {
-  draft(qNum).events.push({ time: 0, type: EVENT_TYPES.GOAL_FOR, playerId: "", assistPlayerId: "" });
+  draft(qNum).events.push({ time: fromDisplaySeconds(0), type: EVENT_TYPES.GOAL_FOR, playerId: "", assistPlayerId: "" });
   renderAll();
 }
 function removeEventRow(qNum, idx) {
@@ -216,7 +234,7 @@ function removeEventRow(qNum, idx) {
   renderAll();
 }
 function addSubRow(qNum) {
-  draft(qNum).substitutions.push({ time: 0, playerInId: "", playerOutId: "" });
+  draft(qNum).substitutions.push({ time: fromDisplaySeconds(0), playerInId: "", playerOutId: "" });
   renderAll();
 }
 function removeSubRow(qNum, idx) {
@@ -327,6 +345,15 @@ function renderQuarterSections(q, d, lineupPlayers) {
     </section>
 
     <section class="panel panel-pad" style="margin-bottom:16px">
+      <div class="section-label">시간 입력 방식</div>
+      <select id="f-time-mode" style="max-width:320px">
+        <option value="absolute" ${form.timeInputMode === "absolute" ? "selected" : ""}>경기 전체 시간 그대로 (예: 2쿼터 5:00 경과 → 15:00)</option>
+        <option value="relative" ${form.timeInputMode === "relative" ? "selected" : ""}>이 쿼터 시작을 0:00으로 (자동으로 이전 쿼터 시간 합산)</option>
+      </select>
+      ${form.timeInputMode === "relative" ? `<p class="small-note" style="margin:8px 0 0">이 쿼터(${q}쿼터) 시작 시각(자동 감지): <span class="mono" style="color:var(--acc)">${formatSeconds(quarterStartTime)}</span></p>` : ""}
+    </section>
+
+    <section class="panel panel-pad" style="margin-bottom:16px">
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
         <div class="section-label" style="margin:0">04 · ${q}쿼터 시작 멤버 선택</div>
         <div class="mono" style="font-size:11.5px;color:var(--acc)">${d.startingLineup.length}명 선택됨</div>
@@ -390,7 +417,11 @@ function renderQuarterSections(q, d, lineupPlayers) {
 
     <section class="panel panel-pad">
       <div class="section-label">자동 계산 · 출전 시간 (${q}쿼터)</div>
-      <p class="small-note" style="margin:0 0 14px">이 쿼터 시작 시각(자동 감지, 이전 쿼터 종료 시각 기준): <span class="mono" style="color:var(--acc)">${formatSeconds(quarterStartTime)}</span> — 시간 입력란은 쿼터마다 0:00부터가 아니라, 경기 전체를 관통하는 시계 기준으로 계속 이어서 적어주세요.</p>
+      <p class="small-note" style="margin:0 0 14px">이 쿼터 시작 시각(자동 감지, 이전 쿼터 종료 시각 기준): <span class="mono" style="color:var(--acc)">${formatSeconds(quarterStartTime)}</span> — ${
+        form.timeInputMode === "relative"
+          ? "위 \"시간 입력 방식\"이 이 쿼터 0:00 기준이라, 입력한 값에 이 시작 시각이 자동으로 더해져 저장됩니다."
+          : "위 \"시간 입력 방식\"이 경기 전체 시간 기준이라, 시간 입력란에 쿼터마다 0:00부터가 아니라 경기 전체를 관통하는 시계로 계속 이어서 적어주세요."
+      }</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px">
         ${
           playtime && playtime.size
@@ -416,7 +447,7 @@ function eventRowHtml(ev, idx, lineupPlayers) {
   const needsAssist = NEEDS_ASSIST.has(ev.type);
   return `
     <div class="event-entry-row">
-      <label class="field"><span class="lab">시간</span><input type="text" class="mono" placeholder="0:00" value="${formatSeconds(ev.time)}" data-ev-time="${idx}" /></label>
+      <label class="field"><span class="lab">시간</span><input type="text" class="mono" placeholder="0:00" value="${formatSeconds(toDisplaySeconds(ev.time))}" data-ev-time="${idx}" /></label>
       <label class="field"><span class="lab">항목</span>
         <select data-ev-type="${idx}">
           ${EVENT_KIND_OPTIONS.map((k) => `<option value="${k}" ${k === ev.type ? "selected" : ""}>${k}</option>`).join("")}
@@ -442,7 +473,7 @@ function eventRowHtml(ev, idx, lineupPlayers) {
 function subRowHtml(s, idx, lineupPlayers) {
   return `
     <div class="sub-entry-row">
-      <label class="field"><span class="lab">시간</span><input type="text" class="mono" placeholder="0:00" value="${formatSeconds(s.time)}" data-sub-time="${idx}" /></label>
+      <label class="field"><span class="lab">시간</span><input type="text" class="mono" placeholder="0:00" value="${formatSeconds(toDisplaySeconds(s.time))}" data-sub-time="${idx}" /></label>
       <label class="field"><span class="lab">교체한 선수 (IN)</span>
         <select data-sub-in="${idx}">
           <option value="">선택</option>
@@ -468,6 +499,13 @@ function bindQuarterSectionEvents(q, d) {
       renderAll();
     });
   });
+  const timeModeSelect = document.getElementById("f-time-mode");
+  if (timeModeSelect) {
+    timeModeSelect.addEventListener("change", (e) => {
+      form.timeInputMode = e.target.value;
+      renderAll();
+    });
+  }
   main.querySelectorAll("[data-starter]").forEach((btn) => {
     btn.addEventListener("click", () => toggleStarter(q, btn.dataset.starter));
   });
@@ -482,7 +520,7 @@ function bindQuarterSectionEvents(q, d) {
   main.querySelectorAll("[data-ev-time]").forEach((input) => {
     input.addEventListener("change", (e) => {
       const secs = parseTimeInput(e.target.value);
-      d.events[Number(input.dataset.evTime)].time = secs == null ? 0 : secs;
+      d.events[Number(input.dataset.evTime)].time = fromDisplaySeconds(secs == null ? 0 : secs);
       renderAll();
     });
   });
@@ -509,7 +547,7 @@ function bindQuarterSectionEvents(q, d) {
   main.querySelectorAll("[data-sub-time]").forEach((input) => {
     input.addEventListener("change", (e) => {
       const secs = parseTimeInput(e.target.value);
-      d.substitutions[Number(input.dataset.subTime)].time = secs == null ? 0 : secs;
+      d.substitutions[Number(input.dataset.subTime)].time = fromDisplaySeconds(secs == null ? 0 : secs);
       renderAll();
     });
   });
