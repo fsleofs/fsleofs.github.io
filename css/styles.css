@@ -270,7 +270,14 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
 .live-feed-row{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:10px 18px;border-top:1px solid var(--line)}
 .live-feed-row:first-child{border-top:0}
 
+/* fixed save bar (admin match form) */
+.save-bar{position:fixed;left:272px;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 24px;background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -8px 22px -14px rgba(0,0,0,0.45)}
+.save-bar .small-note{margin:0}
+.save-bar-spacer{height:74px}
+
 @media (max-width: 860px){
+  .save-bar{left:0;padding:10px 16px}
+  .save-bar-spacer{height:88px}
   .app-shell{flex-direction:column;align-items:stretch}
   .sidebar{position:relative;width:100%;flex:none;height:auto}
   .main{padding:24px 18px 60px;max-width:100%;width:100%}

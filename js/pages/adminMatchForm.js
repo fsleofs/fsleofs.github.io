@@ -488,10 +488,6 @@ function renderQuarterSections(q, d, lineupPlayers) {
             : `<div class="small-note">교체 기록이 없으면 비워두세요.</div>`
         }
       </div></div>
-      <div class="btn-row" style="margin-top:14px">
-        <button class="btn btn-primary" id="save-quarter">${q}쿼터 저장</button>
-        <button class="btn btn-sm" id="export-quarter-txt">${q}쿼터만 TXT로 내보내기</button>
-      </div>
     </section>
 
     <section class="panel panel-pad">
@@ -518,6 +514,13 @@ function renderQuarterSections(q, d, lineupPlayers) {
         }
       </div>
     </section>
+
+    <div class="save-bar-spacer"></div>
+    <div class="save-bar">
+      <button class="btn btn-primary" id="save-quarter">${q}쿼터 저장</button>
+      <button class="btn btn-sm" id="export-quarter-txt">${q}쿼터만 TXT로 내보내기</button>
+      ${status ? `<span class="small-note">${escapeHtml(status)}</span>` : ""}
+    </div>
   `;
 }
 
