@@ -93,6 +93,65 @@ function playerName(id) {
   return p ? p.name : "(알 수 없음)";
 }
 
+// ---------- export ----------
+
+// Quarter times are already stored as continuous match-clock seconds (see saveQuarter/fromDisplaySeconds),
+// so formatting the stored time directly gives times that keep adding onto the previous quarter's.
+function eventLineText(e) {
+  let line = EVENT_KIND_LABELS[e.type] || e.type;
+  if (e.playerId) {
+    line += ` - ${playerName(e.playerId)}`;
+    if (e.assistPlayerId) line += ` (도움: ${playerName(e.assistPlayerId)})`;
+  }
+  return line;
+}
+
+function buildExportText(quarters) {
+  const sorted = [...quarters].sort((a, b) => a.quarterNumber - b.quarterNumber);
+  let text = `FS Leo vs ${form.opponentName || "상대팀"} (${form.date || ""})\n\n`;
+  for (const q of sorted) {
+    text += `[${q.quarterNumber}쿼터]\n`;
+    if ((q.startingLineup || []).length) {
+      text += `시작: ${q.startingLineup.map((id) => playerName(id)).join(", ")}\n`;
+    }
+    const items = [
+      ...(q.events || []).map((e) => ({ time: e.time, text: eventLineText(e) })),
+      ...(q.substitutions || []).map((s) => ({ time: s.time, text: `교체: ${playerName(s.playerOutId)} → ${playerName(s.playerInId)}` })),
+    ].sort((a, b) => a.time - b.time);
+    for (const it of items) {
+      text += `${formatSeconds(it.time)} ${it.text}\n`;
+    }
+    text += `\n`;
+  }
+  return text;
+}
+
+function downloadTextFile(text, filename) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function safeFilenamePart(s) {
+  return (s || "").replace(/[\\/:*?"<>|]/g, "");
+}
+
+function exportQuarterTxt(qNum) {
+  const text = buildExportText([{ quarterNumber: qNum, ...draft(qNum) }]);
+  downloadTextFile(text, `FSLeo_vs_${safeFilenamePart(form.opponentName) || "상대팀"}_${form.date || "날짜없음"}_${qNum}쿼터.txt`);
+}
+
+function exportAllQuartersTxt() {
+  const text = buildExportText(draftsArray());
+  downloadTextFile(text, `FSLeo_vs_${safeFilenamePart(form.opponentName) || "상대팀"}_${form.date || "날짜없음"}_전체.txt`);
+}
+
 export async function render(main) {
   rootEl = main;
   form = emptyForm();
@@ -338,7 +397,10 @@ function renderQuarterSections(q, d, lineupPlayers) {
 
   return `
     <section class="panel panel-pad" style="margin-bottom:16px">
-      <div class="section-label">03 · 쿼터 선택</div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div class="section-label" style="margin:0">03 · 쿼터 선택</div>
+        <button class="btn btn-sm" id="export-all-txt">전체 쿼터 TXT로 내보내기</button>
+      </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         ${Array.from({ length: form.quarterCount }, (_, i) => i + 1)
           .map(
@@ -428,6 +490,7 @@ function renderQuarterSections(q, d, lineupPlayers) {
       </div></div>
       <div class="btn-row" style="margin-top:14px">
         <button class="btn btn-primary" id="save-quarter">${q}쿼터 저장</button>
+        <button class="btn btn-sm" id="export-quarter-txt">${q}쿼터만 TXT로 내보내기</button>
       </div>
     </section>
 
@@ -531,6 +594,10 @@ function bindQuarterSectionEvents(q, d) {
   if (addSubBtn) addSubBtn.addEventListener("click", () => addSubRow(q));
   const saveQBtn = document.getElementById("save-quarter");
   if (saveQBtn) saveQBtn.addEventListener("click", () => saveQuarter(q));
+  const exportQBtn = document.getElementById("export-quarter-txt");
+  if (exportQBtn) exportQBtn.addEventListener("click", () => exportQuarterTxt(q));
+  const exportAllBtn = document.getElementById("export-all-txt");
+  if (exportAllBtn) exportAllBtn.addEventListener("click", exportAllQuartersTxt);
 
   main.querySelectorAll("[data-ev-time]").forEach((input) => {
     input.addEventListener("change", (e) => {
