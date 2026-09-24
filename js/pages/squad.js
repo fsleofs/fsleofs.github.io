@@ -89,10 +89,19 @@ function pitchViewHtml() {
 
   return `
     <div class="pitch">
-      <div class="pitch-center-circle"></div>
-      <div class="pitch-center-line"></div>
-      ${PITCH_ROWS.map((pos) => pitchRowHtml(pos)).join("")}
-      <div class="pitch-goal-box"></div>
+      <div class="pitch-field">
+        <div class="pitch-halfway-line"></div>
+        <svg class="pitch-center-circle" viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M10 0 A 90 90 0 0 0 190 0" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5"/>
+        </svg>
+        <div class="pitch-sub-mark left"></div>
+        <div class="pitch-sub-mark right"></div>
+        ${PITCH_ROWS.map((pos) => pitchRowHtml(pos)).join("")}
+        <svg class="pitch-goal-arc" viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M10 100 A 90 90 0 0 1 190 100" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5"/>
+        </svg>
+        <div class="pitch-goal-net"></div>
+      </div>
     </div>
     ${
       others.length
@@ -111,8 +120,30 @@ function pitchViewHtml() {
 
 function pitchRowHtml(pos) {
   const list = players.filter((p) => (p.position || "미정") === pos);
+  const isGoal = pos === "Goleiro";
+
+  if (pos === "Ala") {
+    const mid = Math.ceil(list.length / 2);
+    const left = list.slice(0, mid);
+    const right = list.slice(mid);
+    return `
+      <div class="pitch-row">
+        <div class="pitch-ala-wrap">
+          <div class="pitch-ala-side">
+            <div class="pitch-row-label">${escapeHtml(pos)}</div>
+            <div class="pitch-ala-players">${left.length ? left.map((p) => pitchPlayerHtml(p)).join("") : `<span class="pitch-empty">-</span>`}</div>
+          </div>
+          <div class="pitch-ala-side">
+            <div class="pitch-row-label">${escapeHtml(pos)}</div>
+            <div class="pitch-ala-players">${right.length ? right.map((p) => pitchPlayerHtml(p)).join("") : `<span class="pitch-empty">-</span>`}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   return `
-    <div class="pitch-row">
+    <div class="pitch-row ${isGoal ? "pitch-row-goal" : ""}">
       <div class="pitch-row-label">${escapeHtml(pos)}</div>
       <div class="pitch-row-players">
         ${list.length ? list.map((p) => pitchPlayerHtml(p)).join("") : `<span class="pitch-empty">-</span>`}
