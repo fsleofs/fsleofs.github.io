@@ -115,6 +115,20 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
 .player-card-body .no{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--ink-3);margin-top:4px}
 .player-card-body .pos{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:0.1em;color:var(--ink-2);margin-top:3px}
 
+/* squad pitch (lineup) view */
+.pitch{position:relative;border-radius:16px;overflow:hidden;padding:28px 18px;display:flex;flex-direction:column;justify-content:space-between;gap:26px;min-height:600px;background:repeating-linear-gradient(180deg,#2f8a52 0 42px,#2c7f4c 42px 84px);border:3px solid rgba(255,255,255,0.55)}
+.pitch-center-line{position:absolute;left:16px;right:16px;top:50%;height:2px;background:rgba(255,255,255,0.55);transform:translateY(-50%)}
+.pitch-center-circle{position:absolute;left:50%;top:50%;width:120px;height:120px;border:2px solid rgba(255,255,255,0.55);border-radius:50%;transform:translate(-50%,-50%)}
+.pitch-goal-box{position:relative;z-index:1;width:160px;height:60px;margin:0 auto;border:2px solid rgba(255,255,255,0.55);border-bottom:0;border-radius:6px 6px 0 0}
+.pitch-row{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px}
+.pitch-row-label{font-size:10.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.78)}
+.pitch-row-players{display:flex;flex-wrap:wrap;justify-content:center;gap:16px 14px}
+.pitch-empty{color:rgba(255,255,255,0.55);font-size:12px}
+.pitch-player{display:flex;flex-direction:column;align-items:center;gap:5px;width:62px}
+.pitch-avatar{width:44px;height:44px;border-radius:50%;background:rgba(10,16,10,0.55);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:#fff;overflow:hidden;flex:0 0 44px}
+.pitch-avatar img{width:100%;height:100%;object-fit:cover}
+.pitch-name{font-size:10.5px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.6);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62px}
+
 /* month nav */
 .month-nav{display:flex;align-items:center;gap:6px;margin-bottom:22px}
 .month-btn{width:34px;height:34px;border:1px solid var(--line);background:var(--panel);border-radius:9px;cursor:pointer;color:var(--ink-2)}
@@ -278,6 +292,13 @@ input,select,button,textarea{font-family:inherit;font-size:inherit;color:inherit
 @media (max-width: 860px){
   .save-bar{left:0;padding:10px 16px}
   .save-bar-spacer{height:88px}
+  .pitch{padding:20px 10px;gap:18px;min-height:520px}
+  .pitch-center-circle{width:90px;height:90px}
+  .pitch-goal-box{width:120px;height:46px}
+  .pitch-row-players{gap:12px 10px}
+  .pitch-player{width:52px}
+  .pitch-avatar{width:38px;height:38px;flex:0 0 38px;font-size:11.5px}
+  .pitch-name{font-size:9.5px;max-width:52px}
   .app-shell{flex-direction:column;align-items:stretch}
   .sidebar{position:relative;width:100%;flex:none;height:auto}
   .main{padding:24px 18px 60px;max-width:100%;width:100%}
